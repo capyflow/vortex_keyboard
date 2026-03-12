@@ -232,6 +232,11 @@ class SoundManager {
       Howler.mute(true)
     }
   }
+  
+  // 获取启用状态
+  isEnabled(): boolean {
+    return this.config.value.enabled
+  }
 
   setVolume(volume: number) {
     this.config.value.volume = volume

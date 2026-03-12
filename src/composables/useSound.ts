@@ -60,6 +60,8 @@ export function useSound() {
   // 切换音效开关
   function toggleSound() {
     config.value.enabled = !config.value.enabled
+    // 同步更新 soundManager 的配置
+    soundManager.config.value.enabled = config.value.enabled
     soundManager.setEnabled(config.value.enabled)
     saveSettings()
   }

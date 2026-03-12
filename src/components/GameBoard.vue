@@ -186,14 +186,20 @@ function handleBlur() {
   // 可以在这里处理失焦逻辑
 }
 
-// 处理输入变化
+// 处理输入变化（仅移动端）
 function handleInput(event: Event) {
   const target = event.target as HTMLInputElement
   const newValue = target.value
   
+  // 桌面端由 handleKeydown 处理，这里只同步值
+  if (!isMobile()) {
+    userInput.value = newValue
+    return
+  }
+  
   // 处理移动端输入 - 逐个字符处理
   if (newValue.length > userInput.value.length) {
-    // 有新增字符 - 获取实际新增的字符（从 currentCharIndex 位置开始）
+    // 有新增字符 - 获取实际新增的字符
     const addedChar = newValue[userInput.value.length]
     if (addedChar) {
       processInputChar(addedChar)
