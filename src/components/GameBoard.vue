@@ -229,12 +229,13 @@ function handleInput(event: Event) {
       const char = newChars[i]
       if (!char) continue
       
+      const prevIndex = currentCharIndex.value
       isProcessingInput.value = true
       processInputChar(char)
       isProcessingInput.value = false
       
-      // 如果是错误输入，停止处理后续字符
-      if (currentCharIndex.value < currentCharIndex.value + i + 1) {
+      // 如果 currentCharIndex 没有增加，说明是错误输入，停止处理
+      if (currentCharIndex.value === prevIndex) {
         break
       }
     }
