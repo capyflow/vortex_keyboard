@@ -381,9 +381,12 @@ function handleKeydown(event: KeyboardEvent) {
       if (currentCharIndex.value >= targetText.value.length) {
         completeLevel()
       }
+    } else {
+      // 错误输入：记录错误，但不触发震动和错误音效
+      gameStore.handleWrongInput(targetChar || '', inputChar)
+      mascotMood.value = 'frustrated'
+      // 不播放错误音，不触发震动，只记录错误统计
     }
-    // 错误输入：不匹配时不处理，让用户自己修正
-    // 不触发震动，不播放错误音，只是不前进
   }
 }
 

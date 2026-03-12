@@ -8,7 +8,7 @@ export function useMusic() {
   const volume = ref(0.3)
   const currentBpm = ref(60)
   const currentTheme = ref('')
-  const enabled = ref(false) // 用户设置的开关状态
+  const enabled = ref(true) // 默认开启音乐
 
   // 加载设置
   function loadSettings() {
@@ -17,7 +17,7 @@ export function useMusic() {
       if (saved) {
         const config = JSON.parse(saved)
         volume.value = config.volume || 0.3
-        enabled.value = config.enabled || false
+        enabled.value = typeof config.enabled === 'boolean' ? config.enabled : true
         musicManager.setVolume(volume.value)
       }
     } catch (e) {

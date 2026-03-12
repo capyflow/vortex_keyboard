@@ -165,8 +165,12 @@ function startGame(levelId: number) {
   
   // 播放关卡音乐（如果用户开启了音乐）
   const level = getLevel(levelId)
-  if (level && music.enabled.value) {
-    music.playLevel(level.bpm, level.theme)
+  if (level) {
+    // 确保设置已加载
+    music.loadSettings()
+    if (music.enabled.value) {
+      music.playLevel(level.bpm, level.theme)
+    }
   }
 }
 
