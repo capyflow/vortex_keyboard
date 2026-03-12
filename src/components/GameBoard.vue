@@ -77,7 +77,6 @@
         inputmode="text"
         class="hidden-input"
         @input="handleInput"
-        @keydown="handleKeydown"
         @focus="handleFocus"
         @blur="handleBlur"
       />
