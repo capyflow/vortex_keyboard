@@ -103,6 +103,7 @@ function getElementStyle(_index: number) {
   overflow: hidden;
   z-index: 0;
   transition: background 0.5s ease;
+  pointer-events: none;
 }
 
 .gradient-layer {

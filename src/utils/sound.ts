@@ -1,4 +1,3 @@
-import { Howl, Howler } from 'howler'
 import { ref } from 'vue'
 
 export interface SoundConfig {
@@ -9,12 +8,12 @@ export interface SoundConfig {
 }
 
 class SoundManager {
-  private keySound: Howl | null = null
-  private comboSounds: Map<number, Howl> = new Map()
-  private errorSound: Howl | null = null
-  private completeSound: Howl | null = null
-  private bgm: Howl | null = null
-  
+  private audioContext: AudioContext | null = null
+  private masterGain: GainNode | null = null
+  private bgmGain: GainNode | null = null
+  private bgmTimer: number | null = null
+  private isBgmPlaying = false
+
   config = ref<SoundConfig>({
     enabled: true,
     volume: 0.5,
@@ -22,225 +21,192 @@ class SoundManager {
     musicVolume: 0.3,
   })
 
-  constructor() {
-    this.initSounds()
-  }
+  private ensureAudioContext(): AudioContext | null {
+    if (!this.audioContext || this.audioContext.state === 'closed') {
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
 
-  private initSounds() {
-    // 机械键盘按键音 - 使用合成音效
-    this.keySound = new Howl({
-      src: [this.generateKeySound()],
-      format: ['webm', 'mp3'],
-      volume: this.config.value.volume,
-    })
+      this.masterGain = this.audioContext.createGain()
+      this.masterGain.gain.value = this.config.value.enabled ? this.config.value.volume : 0
+      this.masterGain.connect(this.audioContext.destination)
 
-    // 错误提示音
-    this.errorSound = new Howl({
-      src: [this.generateErrorSound()],
-      format: ['webm', 'mp3'],
-      volume: this.config.value.volume,
-    })
-
-    // 完成音效
-    this.completeSound = new Howl({
-      src: [this.generateCompleteSound()],
-      format: ['webm', 'mp3'],
-      volume: this.config.value.volume,
-    })
-
-    // 连击音效 (不同音调)
-    for (let i = 1; i <= 5; i++) {
-      const sound = new Howl({
-        src: [this.generateComboSound(i)],
-        format: ['webm', 'mp3'],
-        volume: this.config.value.volume,
-        rate: 0.8 + (i * 0.15), // 连击越高音调越高
-      })
-      this.comboSounds.set(i, sound)
+      this.bgmGain = this.audioContext.createGain()
+      this.bgmGain.gain.value = this.config.value.musicVolume
+      this.bgmGain.connect(this.masterGain)
     }
 
-    // 背景音乐 (可选)
-    this.bgm = new Howl({
-      src: [this.generateBGM()],
-      format: ['webm', 'mp3'],
-      volume: this.config.value.musicVolume,
-      loop: true,
-    })
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume()
+    }
+
+    return this.audioContext
   }
 
-  // 生成按键音效 (使用 Web Audio API 合成)
-  private generateKeySound(): string {
-    return this.createDataURI((ctx) => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      
-      osc.type = 'triangle'
-      osc.frequency.setValueAtTime(600, ctx.currentTime)
-      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1)
-      
-      gain.gain.setValueAtTime(0.3, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1)
-      
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      
-      osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + 0.1)
-    })
-  }
-
-  // 生成错误音效
-  private generateErrorSound(): string {
-    return this.createDataURI((ctx) => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      
-      osc.type = 'sawtooth'
-      osc.frequency.setValueAtTime(200, ctx.currentTime)
-      osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.2)
-      
-      gain.gain.setValueAtTime(0.3, ctx.currentTime)
-      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2)
-      
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      
-      osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + 0.2)
-    })
-  }
-
-  // 生成完成音效
-  private generateCompleteSound(): string {
-    return this.createDataURI((ctx) => {
-      // 和弦效果
-      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        
-        osc.type = 'sine'
-        osc.frequency.value = freq
-        
-        gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.1)
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5 + i * 0.1)
-        
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        
-        osc.start(ctx.currentTime + i * 0.1)
-        osc.stop(ctx.currentTime + 0.6 + i * 0.1)
-      })
-    })
-  }
-
-  // 生成连击音效
-  private generateComboSound(level: number): string {
-    return this.createDataURI((ctx) => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      
-      osc.type = 'sine'
-      osc.frequency.value = 400 + (level * 100)
-      
-      gain.gain.setValueAtTime(0.2, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15)
-      
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      
-      osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + 0.15)
-    })
-  }
-
-  // 生成背景音乐
-  private generateBGM(): string {
-    return this.createDataURI((ctx) => {
-      // 简单的循环和弦进行
-      const notes = [261.63, 329.63, 392.00, 523.25] // C 大调和弦
-      notes.forEach((freq) => {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        
-        osc.type = 'sine'
-        osc.frequency.value = freq
-        
-        gain.gain.setValueAtTime(0.1, ctx.currentTime)
-        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 2)
-        
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        
-        osc.start(ctx.currentTime)
-        osc.stop(ctx.currentTime + 2)
-      })
-    })
-  }
-
-  // 创建 Data URI
-  private createDataURI(generator: (ctx: AudioContext) => void): string {
-    const audioContext = new AudioContext()
-    generator(audioContext)
-    
-    // 由于无法直接合成 Data URI，返回空字符串并使用备用方案
-    // 实际项目中应该预先生成音频文件
-    return ''
+  private connectToMaster(node: AudioNode) {
+    if (this.masterGain) {
+      node.connect(this.masterGain)
+    }
   }
 
   playKey() {
-    if (!this.config.value.enabled || !this.keySound) return
-    this.keySound.play()
+    if (!this.config.value.enabled) return
+    const ctx = this.ensureAudioContext()
+    if (!ctx) return
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(600, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1)
+
+    gain.gain.setValueAtTime(0.3, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1)
+
+    osc.connect(gain)
+    this.connectToMaster(gain)
+
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.1)
   }
 
   playError() {
-    if (!this.config.value.enabled || !this.errorSound) return
-    this.errorSound.play()
+    if (!this.config.value.enabled) return
+    const ctx = this.ensureAudioContext()
+    if (!ctx) return
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(200, ctx.currentTime)
+    osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.2)
+
+    gain.gain.setValueAtTime(0.3, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2)
+
+    osc.connect(gain)
+    this.connectToMaster(gain)
+
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.2)
   }
 
   playCombo(combo: number) {
     if (!this.config.value.enabled) return
-    
-    // 每 5 个连击播放一次特殊音效
-    if (combo % 5 === 0 && combo > 0) {
-      const level = Math.min(Math.floor(combo / 5), 5)
-      const sound = this.comboSounds.get(level)
-      if (sound) sound.play()
-    }
+
+    if (combo % 5 !== 0 || combo <= 0) return
+    const level = Math.min(Math.floor(combo / 5), 5)
+
+    const ctx = this.ensureAudioContext()
+    if (!ctx) return
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sine'
+    osc.frequency.value = 400 + (level * 100)
+
+    gain.gain.setValueAtTime(0.2, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15)
+
+    osc.connect(gain)
+    this.connectToMaster(gain)
+
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.15)
   }
 
   playComplete() {
-    if (!this.config.value.enabled || !this.completeSound) return
-    this.completeSound.play()
+    if (!this.config.value.enabled) return
+    const ctx = this.ensureAudioContext()
+    if (!ctx) return
+
+    const frequencies = [523.25, 659.25, 783.99, 1046.5]
+
+    frequencies.forEach((freq, i) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+
+      osc.type = 'sine'
+      osc.frequency.value = freq
+
+      const start = ctx.currentTime + i * 0.1
+      gain.gain.setValueAtTime(0.2, start)
+      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.5)
+
+      osc.connect(gain)
+      this.connectToMaster(gain)
+
+      osc.start(start)
+      osc.stop(start + 0.6)
+    })
+  }
+
+  private scheduleBgm() {
+    if (!this.isBgmPlaying) return
+    const ctx = this.ensureAudioContext()
+    if (!ctx || !this.bgmGain) return
+
+    const notes = [261.63, 329.63, 392.0, 523.25]
+    const start = ctx.currentTime
+
+    notes.forEach((freq) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+
+      osc.type = 'sine'
+      osc.frequency.value = freq
+
+      gain.gain.setValueAtTime(0.1, start)
+      gain.gain.linearRampToValueAtTime(0.01, start + 2)
+
+      osc.connect(gain)
+      gain.connect(this.bgmGain)
+
+      osc.start(start)
+      osc.stop(start + 2)
+    })
+
+    this.bgmTimer = window.setTimeout(() => this.scheduleBgm(), 2000)
   }
 
   playBGM() {
-    if (!this.config.value.musicEnabled || !this.bgm) return
-    this.bgm.play()
+    if (!this.config.value.musicEnabled || this.isBgmPlaying) return
+    this.isBgmPlaying = true
+    this.scheduleBgm()
   }
 
   stopBGM() {
-    if (!this.bgm) return
-    this.bgm.stop()
+    this.isBgmPlaying = false
+    if (this.bgmTimer) {
+      window.clearTimeout(this.bgmTimer)
+      this.bgmTimer = null
+    }
   }
 
   setEnabled(enabled: boolean) {
     this.config.value.enabled = enabled
-    if (enabled) {
-      Howler.mute(false)
-      Howler.volume(this.config.value.volume)
-    } else {
-      Howler.mute(true)
+    if (this.masterGain && this.audioContext) {
+      this.masterGain.gain.setValueAtTime(
+        enabled ? this.config.value.volume : 0,
+        this.audioContext.currentTime
+      )
+    }
+
+    if (!enabled) {
+      this.stopBGM()
     }
   }
-  
-  // 获取启用状态
+
   isEnabled(): boolean {
     return this.config.value.enabled
   }
 
   setVolume(volume: number) {
     this.config.value.volume = volume
-    Howler.volume(volume)
+    if (this.masterGain && this.audioContext && this.config.value.enabled) {
+      this.masterGain.gain.setValueAtTime(volume, this.audioContext.currentTime)
+    }
   }
 
   setMusicEnabled(enabled: boolean) {
@@ -254,8 +220,8 @@ class SoundManager {
 
   setMusicVolume(volume: number) {
     this.config.value.musicVolume = volume
-    if (this.bgm) {
-      this.bgm.volume(volume)
+    if (this.bgmGain && this.audioContext) {
+      this.bgmGain.gain.setValueAtTime(volume, this.audioContext.currentTime)
     }
   }
 }

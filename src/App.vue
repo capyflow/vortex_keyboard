@@ -1,7 +1,11 @@
 <template>
   <div class="app">
     <!-- 首页 -->
-    <LandingPage v-if="showLanding" @start="handleStartGame" />
+    <LandingPage
+      v-if="showLanding"
+      @start="handleStartGame"
+      @settings="showSettings = true"
+    />
 
     <!-- 游戏主界面 -->
     <template v-else>
@@ -55,9 +59,12 @@
         <!-- 游戏界面 -->
         <GameBoard
           v-if="isPlaying"
+          :key="`level-${currentLevelId}-restart-${restartToken}`"
           :level-id="currentLevelId"
+          :restart-token="restartToken"
           @complete="handleComplete"
           @error="playErrorSound"
+          @exit="exitToLevels"
         />
 
         <!-- 结算画面 -->
@@ -68,12 +75,6 @@
           @next="nextLevel"
           @restart="restartLevel"
           @back="backToLevels"
-        />
-
-        <!-- 设置面板 -->
-        <SettingsModal
-          v-if="showSettings"
-          @close="showSettings = false"
         />
 
         <!-- 统计页面 -->
@@ -104,6 +105,12 @@
         </div>
       </div>
     </template>
+
+    <!-- 设置面板（首页也可打开） -->
+    <SettingsModal
+      v-if="showSettings"
+      @close="showSettings = false"
+    />
   </div>
 </template>
 
@@ -150,6 +157,7 @@ const currentLevelId = ref(1)
 const isPlaying = ref(false)
 const showResult = ref(false)
 const showSettings = ref(false)
+const restartToken = ref(0)
 const lastStats = ref<{ time: number; accuracy: number; combo: number; chars: number; wrongChars: number } | null>(null)
 
 function handleStartGame() {
@@ -168,6 +176,7 @@ function startGame(levelId: number) {
   if (level) {
     // 确保设置已加载
     music.loadSettings()
+    music.setLevelContext(level.bpm, level.theme)
     if (music.enabled.value) {
       music.playLevel(level.bpm, level.theme)
     }
@@ -184,6 +193,13 @@ function nextLevel() {
   currentLevelId.value++
   isPlaying.value = true
   gameStore.setLevel(currentLevelId.value)
+  const level = getLevel(currentLevelId.value)
+  if (level) {
+    music.setLevelContext(level.bpm, level.theme)
+    if (music.enabled.value) {
+      music.playLevel(level.bpm, level.theme)
+    }
+  }
 }
 
 function restartLevel() {
@@ -191,12 +207,28 @@ function restartLevel() {
   isPlaying.value = true
   gameStore.resetGame()
   gameStore.startGame()
+  const level = getLevel(currentLevelId.value)
+  if (level) {
+    music.setLevelContext(level.bpm, level.theme)
+    if (music.enabled.value) {
+      music.playLevel(level.bpm, level.theme)
+    }
+  }
+  restartToken.value += 1
 }
 
 function backToLevels() {
   showResult.value = false
   isPlaying.value = false
   currentView.value = 'levels'
+  music.stopLevel()
+}
+
+function exitToLevels() {
+  showResult.value = false
+  isPlaying.value = false
+  currentView.value = 'levels'
+  gameStore.resetGame()
   music.stopLevel()
 }
 

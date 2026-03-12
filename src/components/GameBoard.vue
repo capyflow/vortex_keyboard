@@ -100,6 +100,9 @@
       <button @click="handleRestart" class="btn btn-primary">
         重新开始
       </button>
+      <button @click="handleExit" class="btn btn-outline">
+        退出关卡
+      </button>
     </div>
     </div>
   </ScreenShake>
@@ -111,18 +114,20 @@ import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { useSound } from '@/composables/useSound'
 import { formatCombo } from '@/utils/combo'
-import { getLevel } from '@/data/levels'
+import { getLevel, levels } from '@/data/levels'
 import ComboFire from '@/components/ComboFire.vue'
 import KeyParticles from '@/components/KeyParticles.vue'
 import ScreenShake from '@/components/ScreenShake.vue'
 
 const props = defineProps<{
   levelId: number
+  restartToken: number
 }>()
 
 const emit = defineEmits<{
   complete: [stats: { time: number; accuracy: number; combo: number; chars: number; wrongChars: number }]
   error: []
+  exit: []
 }>()
 
 const gameStore = useGameStore()
@@ -141,12 +146,25 @@ const keyParticlesRef = ref<InstanceType<typeof KeyParticles>>()
 const screenShakeRef = ref<InstanceType<typeof ScreenShake>>()
 const hiddenInputRef = ref<HTMLInputElement>()
 
-const level = computed(() => getLevel(props.levelId))
+const resolvedLevelId = computed(() => {
+  const id = Number(props.levelId)
+  if (!Number.isFinite(id) || id < 1) return 1
+  return id
+})
+
+const level = computed(() => getLevel(resolvedLevelId.value))
+const targetText = computed(() => level.value?.text || levels[0]?.text || '')
 
 // 监听关卡变化，重置状态
 watch(() => props.levelId, () => {
   resetGameState()
 }, { immediate: true })
+
+watch(() => props.restartToken, (newToken, oldToken) => {
+  if (newToken !== oldToken) {
+    resetGameState()
+  }
+})
 
 // 监听连击变化，触发动画
 watch(() => gameStore.state.combo, (newCombo) => {
@@ -311,13 +329,13 @@ function resetGameState() {
   comboAnimating.value = false
   gameStore.resetGame()
   gameStore.startGame()
+  gameStore.updateProgress(0, Math.max(targetText.value.length, 1))
   
   // 重置隐藏输入框
   if (hiddenInputRef.value) {
     hiddenInputRef.value.value = ''
   }
 }
-const targetText = computed(() => level.value?.text || '')
 
 const mascotClass = computed(() => ({
   'mascot-happy': mascotMood.value === 'happy',
@@ -463,6 +481,11 @@ function handleRestart() {
   currentCharIndex.value = 0
   mascotMood.value = 'focused'
   gameStore.startGame()
+}
+
+function handleExit() {
+  gameStore.stopGame()
+  emit('exit')
 }
 
 function formatTime(seconds: number): string {

@@ -10,6 +10,13 @@
       <div class="grid-layer"></div>
     </div>
 
+    <!-- 顶部控制区 -->
+    <div class="landing-controls">
+      <button class="control-btn" @click="emit('settings')">
+        ⚙️ 设置
+      </button>
+    </div>
+
     <!-- 主内容区 -->
     <div class="hero-content">
       <!-- Logo 和标题 -->
@@ -119,13 +126,45 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, watch } from 'vue'
+import { useMusic } from '@/composables/useMusic'
+
 const emit = defineEmits<{
   start: []
+  settings: []
 }>()
+
+const music = useMusic()
+
+onMounted(() => {
+  music.loadSettings()
+})
 
 function handleStart() {
   emit('start')
 }
+
+const menuBpm = 80
+const menuTheme = '清晨花园'
+
+function ensureMenuMusic() {
+  music.setLevelContext(menuBpm, menuTheme)
+  if (music.enabled.value && !music.isPlaying.value) {
+    music.playLevel(menuBpm, menuTheme)
+  }
+}
+
+onMounted(() => {
+  ensureMenuMusic()
+})
+
+watch(() => music.enabled.value, (enabled) => {
+  if (enabled) {
+    ensureMenuMusic()
+  } else {
+    music.stopLevel()
+  }
+})
 
 function getParticleStyle(_index: number) {
   const delay = Math.random() * 10
@@ -150,6 +189,36 @@ function getParticleStyle(_index: number) {
   overflow: hidden;
 }
 
+.landing-controls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 2;
+}
+
+.control-btn {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
 /* 英雄背景 */
 .hero-background {
   position: absolute;
@@ -158,6 +227,7 @@ function getParticleStyle(_index: number) {
   right: 0;
   bottom: 0;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .gradient-layer {
