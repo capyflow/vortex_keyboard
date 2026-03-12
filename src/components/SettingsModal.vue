@@ -49,7 +49,7 @@
           <label class="toggle">
             <input
               type="checkbox"
-              :checked="music.isPlaying.value"
+              :checked="music.enabled.value"
               @change="handleToggleMusic"
             />
             <span class="toggle-slider"></span>
@@ -175,7 +175,7 @@ function handleSetVolume(event: Event) {
 
 function handleToggleMusic() {
   music.toggle()
-  settingsStore.setMusicEnabled(music.isPlaying.value)
+  settingsStore.setMusicEnabled(music.enabled.value)
 }
 
 function handleSetMusicVolume(event: Event) {

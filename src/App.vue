@@ -163,9 +163,9 @@ function startGame(levelId: number) {
   currentView.value = 'game'
   gameStore.setLevel(levelId)
   
-  // 播放关卡音乐
+  // 播放关卡音乐（如果用户开启了音乐）
   const level = getLevel(levelId)
-  if (level) {
+  if (level && music.enabled.value) {
     music.playLevel(level.bpm, level.theme)
   }
 }
