@@ -16,7 +16,14 @@ export function useSound() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
-        config.value = JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+        // 只覆盖已保存的字段，保持默认值
+        config.value = {
+          ...config.value,
+          ...parsed,
+          // 如果没有明确设置 enabled，默认为 true
+          enabled: typeof parsed.enabled === 'boolean' ? parsed.enabled : true,
+        }
         soundManager.config.value = config.value
         soundManager.setEnabled(config.value.enabled)
         soundManager.setVolume(config.value.volume)
