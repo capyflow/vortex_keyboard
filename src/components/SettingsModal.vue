@@ -36,16 +36,20 @@
           />
           <span class="value">{{ Math.round(sound.config.value.volume * 100) }}%</span>
         </div>
+      </div>
+      
+      <div class="settings-section">
+        <h3 class="section-title">🎵 关卡音乐</h3>
         
         <div class="setting-item">
           <div class="setting-label">
-            <span class="setting-icon">🎵</span>
-            <span>背景音乐</span>
+            <span class="setting-icon">🎹</span>
+            <span>动态音乐</span>
           </div>
           <label class="toggle">
             <input
               type="checkbox"
-              :checked="sound.config.value.musicEnabled"
+              :checked="music.isPlaying.value"
               @change="handleToggleMusic"
             />
             <span class="toggle-slider"></span>
@@ -61,11 +65,19 @@
             type="range"
             min="0"
             max="100"
-            :value="sound.config.value.musicVolume * 100"
+            :value="music.volume.value * 100"
             @input="handleSetMusicVolume"
             class="slider"
           />
-          <span class="value">{{ Math.round(sound.config.value.musicVolume * 100) }}%</span>
+          <span class="value">{{ Math.round(music.volume.value * 100) }}%</span>
+        </div>
+        
+        <div class="setting-item">
+          <div class="setting-label">
+            <span class="setting-icon">ℹ️</span>
+            <span>说明</span>
+          </div>
+          <span class="setting-desc">每个关卡有独特的 BPM 和主题音乐</span>
         </div>
       </div>
       
@@ -111,13 +123,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useSound } from '@/composables/useSound'
+import { useMusic } from '@/composables/useMusic'
 
 const emit = defineEmits<{
   close: []
 }>()
 
 const sound = useSound()
+const music = useMusic()
 const fontSize = ref('medium')
+
+// 加载音乐设置
+music.loadSettings()
 
 function handleToggleSound() {
   sound.toggleSound()
@@ -129,12 +146,12 @@ function handleSetVolume(event: Event) {
 }
 
 function handleToggleMusic() {
-  sound.toggleMusic()
+  music.toggle()
 }
 
 function handleSetMusicVolume(event: Event) {
   const value = (event.target as HTMLInputElement).value
-  sound.setMusicVolume(Number(value) / 100)
+  music.setVolume(Number(value) / 100)
 }
 
 function handleSetFontSize(event: Event) {
@@ -328,6 +345,12 @@ sound.loadSettings()
   text-align: right;
   font-weight: 600;
   color: #6B7280;
+}
+
+.setting-desc {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  font-style: italic;
 }
 
 /* 下拉框 */

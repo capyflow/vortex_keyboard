@@ -1,12 +1,13 @@
 <template>
   <div class="app">
-    <!-- 动态背景 -->
-    <div class="background" :class="backgroundClass">
-      <div class="vortex"></div>
-      <div class="particles">
-        <span v-for="i in 20" :key="i" class="particle" :style="getParticleStyle(i)"></span>
-      </div>
-    </div>
+    <!-- 动态背景和音乐 -->
+    <DynamicBackground
+      v-if="currentLevelData"
+      :colors="currentLevelData.colors"
+      :bpm="currentLevelData.bpm"
+      :theme="currentLevelData.theme"
+      :show-bpm="isPlaying"
+    />
 
     <!-- 主内容 -->
     <div class="content">
@@ -101,17 +102,25 @@
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
+import { useMusic } from '@/composables/useMusic'
 import LevelSelect from '@/components/LevelSelect.vue'
 import GameBoard from '@/components/GameBoard.vue'
 import ResultModal from '@/components/ResultModal.vue'
 import SettingsModal from '@/components/SettingsModal.vue'
 import AchievementsPanel from '@/components/AchievementsPanel.vue'
+import DynamicBackground from '@/components/DynamicBackground.vue'
+import { getLevel } from '@/data/levels'
 
 const gameStore = useGameStore()
 const userStore = useUserStore()
+const music = useMusic()
 
 // 初始化加载用户数据
 userStore.loadStats()
+music.loadSettings()
+
+// 当前关卡的背景和音乐
+const currentLevelData = computed(() => getLevel(currentLevelId.value))
 
 const currentView = ref<'levels' | 'stats' | 'achievements' | 'game'>('levels')
 const currentLevelId = ref(1)
@@ -120,27 +129,17 @@ const showResult = ref(false)
 const showSettings = ref(false)
 const lastStats = ref<{ time: number; accuracy: number; combo: number; chars: number } | null>(null)
 
-const backgroundClass = computed(() => ({
-  'bg-fast': gameStore.state.speed > 1.3,
-  'bg-normal': gameStore.state.speed <= 1.3,
-}))
-
-function getParticleStyle(_index: number) {
-  const delay = Math.random() * 5
-  const duration = 3 + Math.random() * 4
-  const left = Math.random() * 100
-  return {
-    '--delay': `${delay}s`,
-    '--duration': `${duration}s`,
-    '--left': `${left}%`,
-  }
-}
-
 function startGame(levelId: number) {
   currentLevelId.value = levelId
   isPlaying.value = true
   currentView.value = 'game'
   gameStore.setLevel(levelId)
+  
+  // 播放关卡音乐
+  const level = getLevel(levelId)
+  if (level) {
+    music.playLevel(level.bpm, level.theme)
+  }
 }
 
 function handleComplete(stats: { time: number; accuracy: number; combo: number; chars: number }) {
@@ -166,6 +165,7 @@ function backToLevels() {
   showResult.value = false
   isPlaying.value = false
   currentView.value = 'levels'
+  music.stopLevel()
 }
 
 function playErrorSound() {

@@ -4,6 +4,10 @@ export interface Level {
   text: string
   difficulty: 'easy' | 'medium' | 'hard' | 'expert'
   description: string
+  bpm: number // 音乐速度（关卡越高越快）
+  theme: string // 主题名称
+  colors: [string, string] | [string, string, string, string] // 背景渐变色
+  music: string // 音乐风格描述
 }
 
 export const levels: Level[] = [
@@ -14,6 +18,10 @@ export const levels: Level[] = [
     text: 'the quick brown fox jumps over the lazy dog',
     difficulty: 'easy',
     description: '经典的英文字母练习句',
+    bpm: 60,
+    theme: '清晨花园',
+    colors: ['#667eea', '#764ba2'],
+    music: '轻松的钢琴曲',
   },
   {
     id: 2,
@@ -21,6 +29,10 @@ export const levels: Level[] = [
     text: 'hello world welcome to vortex keyboard practice makes perfect',
     difficulty: 'easy',
     description: '常用单词组合',
+    bpm: 65,
+    theme: '阳光海滩',
+    colors: ['#4facfe', '#00f2fe'],
+    music: '轻快的吉他',
   },
   {
     id: 3,
@@ -28,6 +40,10 @@ export const levels: Level[] = [
     text: 'coding is fun typing fast is awesome keep going you are doing great',
     difficulty: 'easy',
     description: '鼓励短句',
+    bpm: 70,
+    theme: '春日草原',
+    colors: ['#43e97b', '#38f9d7'],
+    music: '欢快的长笛',
   },
   {
     id: 4,
@@ -35,6 +51,10 @@ export const levels: Level[] = [
     text: 'good morning have a nice day good night see you later take care',
     difficulty: 'easy',
     description: '日常问候用语',
+    bpm: 75,
+    theme: '温馨小屋',
+    colors: ['#fa709a', '#fee140'],
+    music: '温暖的弦乐',
   },
   {
     id: 5,
@@ -42,6 +62,10 @@ export const levels: Level[] = [
     text: 'one two three four five six seven eight nine ten eleven twelve',
     difficulty: 'easy',
     description: '英文数字拼写',
+    bpm: 80,
+    theme: '星空夜景',
+    colors: ['#a8edea', '#fed6e3'],
+    music: '梦幻的合成器',
   },
   {
     id: 6,
@@ -49,6 +73,10 @@ export const levels: Level[] = [
     text: 'red blue green yellow orange purple pink black white brown gray',
     difficulty: 'easy',
     description: '颜色单词练习',
+    bpm: 85,
+    theme: '彩虹天空',
+    colors: ['#ff9a9e', '#fecfef'],
+    music: '明亮的钢琴',
   },
   {
     id: 7,
@@ -56,6 +84,10 @@ export const levels: Level[] = [
     text: 'cat dog elephant lion tiger monkey zebra giraffe rabbit panda',
     difficulty: 'easy',
     description: '动物名称练习',
+    bpm: 90,
+    theme: '热带雨林',
+    colors: ['#5ee7df', '#b490ca'],
+    music: '活泼的木琴',
   },
   {
     id: 8,
@@ -63,6 +95,10 @@ export const levels: Level[] = [
     text: 'apple banana orange pizza burger sushi noodle rice bread cheese',
     difficulty: 'easy',
     description: '食物单词练习',
+    bpm: 95,
+    theme: '甜品世界',
+    colors: ['#f093fb', '#f5576c'],
+    music: '甜美的音乐盒',
   },
   
   // ==================== 中等难度 (9-16) ====================
@@ -72,6 +108,10 @@ export const levels: Level[] = [
     text: 'the five boxing wizards jump quickly at the crazy party while eating pizza',
     difficulty: 'medium',
     description: '包含更多字母组合',
+    bpm: 100,
+    theme: '都市夜景',
+    colors: ['#4facfe', '#00f2fe'],
+    music: '动感的电子乐',
   },
   {
     id: 10,
@@ -79,6 +119,10 @@ export const levels: Level[] = [
     text: 'pack my box with five dozen liquor jugs and three bottles of wine for the trip',
     difficulty: 'medium',
     description: '全字母句子',
+    bpm: 105,
+    theme: '高速公路',
+    colors: ['#f093fb', '#f5576c'],
+    music: '快节奏的摇滚',
   },
   {
     id: 11,
@@ -86,6 +130,10 @@ export const levels: Level[] = [
     text: 'programming is the art of telling another human what one wants the computer to do with precision and clarity',
     difficulty: 'medium',
     description: '编程相关句子',
+    bpm: 110,
+    theme: '代码空间',
+    colors: ['#0f0c29', '#302b63'],
+    music: '科技感电子',
   },
   {
     id: 12,
@@ -93,6 +141,10 @@ export const levels: Level[] = [
     text: 'the only way to do great work is to love what you do and never give up on your dreams',
     difficulty: 'medium',
     description: '励志名言练习',
+    bpm: 115,
+    theme: '晨曦山峰',
+    colors: ['#ff9a9e', '#fecfef'],
+    music: '激昂的交响乐',
   },
   {
     id: 13,
@@ -100,6 +152,10 @@ export const levels: Level[] = [
     text: 'artificial intelligence machine learning deep learning neural networks and data science are changing the world',
     difficulty: 'medium',
     description: '科技术语练习',
+    bpm: 120,
+    theme: '未来城市',
+    colors: ['#667eea', '#764ba2'],
+    music: '赛博朋克风',
   },
   {
     id: 14,
@@ -107,6 +163,10 @@ export const levels: Level[] = [
     text: 'yesterday i traveled to paris and visited the eiffel tower the louvre museum and notre dame cathedral',
     difficulty: 'medium',
     description: '旅行场景描述',
+    bpm: 125,
+    theme: '欧洲小镇',
+    colors: ['#a8edea', '#fed6e3'],
+    music: '法式手风琴',
   },
   {
     id: 15,
@@ -114,6 +174,10 @@ export const levels: Level[] = [
     text: 'today is sunny with a high of twenty five degrees tomorrow will be cloudy with a chance of rain in the evening',
     difficulty: 'medium',
     description: '天气描述练习',
+    bpm: 130,
+    theme: '雨后彩虹',
+    colors: ['#43e97b', '#38f9d7'],
+    music: '清新的自然音',
   },
   {
     id: 16,
@@ -121,6 +185,10 @@ export const levels: Level[] = [
     text: 'regular exercise healthy eating and enough sleep are the three pillars of a healthy lifestyle',
     difficulty: 'medium',
     description: '健康主题练习',
+    bpm: 135,
+    theme: '健身房',
+    colors: ['#fa709a', '#fee140'],
+    music: '活力的健身音乐',
   },
   
   // ==================== 困难难度 (17-24) ====================
@@ -130,6 +198,10 @@ export const levels: Level[] = [
     text: 'sphinx of black quartz judge my vow and accept the challenge that lies ahead with courage',
     difficulty: 'hard',
     description: '高难度字母组合',
+    bpm: 140,
+    theme: '火焰山谷',
+    colors: ['#f12711', '#f5af19'],
+    music: '激烈的金属乐',
   },
   {
     id: 18,
@@ -137,6 +209,10 @@ export const levels: Level[] = [
     text: 'function hello() { return world } const greeting = hello() console.log(greeting)',
     difficulty: 'hard',
     description: '基础代码练习',
+    bpm: 145,
+    theme: '矩阵空间',
+    colors: ['#000000', '#00ff00'],
+    music: '数字电子乐',
   },
   {
     id: 19,
@@ -144,6 +220,10 @@ export const levels: Level[] = [
     text: 'the rapid brown fox leaps over the sleepy dog while the moon shines bright above the quiet forest',
     difficulty: 'hard',
     description: '长句速度挑战',
+    bpm: 150,
+    theme: '极速赛道',
+    colors: ['#ff0844', '#ffb199'],
+    music: '高速电子舞曲',
   },
   {
     id: 20,
@@ -151,6 +231,10 @@ export const levels: Level[] = [
     text: 'dear mr smith i am writing to follow up on our previous discussion regarding the project proposal and budget allocation',
     difficulty: 'hard',
     description: '商务邮件写作',
+    bpm: 155,
+    theme: '摩天大楼',
+    colors: ['#1e3c72', '#2a5298'],
+    music: '商务爵士乐',
   },
   {
     id: 21,
@@ -158,6 +242,10 @@ export const levels: Level[] = [
     text: 'the methodology employed in this study involves quantitative analysis of survey data collected from over five hundred participants',
     difficulty: 'hard',
     description: '学术写作风格',
+    bpm: 160,
+    theme: '图书馆',
+    colors: ['#3a1c71', '#d76d77'],
+    music: '古典钢琴',
   },
   {
     id: 22,
@@ -165,6 +253,10 @@ export const levels: Level[] = [
     text: 'pursuant to the terms and conditions set forth in section three paragraph b of the agreement all parties must comply',
     difficulty: 'hard',
     description: '法律文本练习',
+    bpm: 165,
+    theme: '法庭',
+    colors: ['#2c3e50', '#4ca1af'],
+    music: '庄严的管风琴',
   },
   {
     id: 23,
@@ -172,6 +264,10 @@ export const levels: Level[] = [
     text: 'the fog comes on little cat feet it sits looking over harbor and city on silent haunches and then moves on',
     difficulty: 'hard',
     description: '英文诗歌练习',
+    bpm: 170,
+    theme: '月光海岸',
+    colors: ['#4b6cb7', '#182848'],
+    music: '诗意的小提琴',
   },
   {
     id: 24,
@@ -179,6 +275,10 @@ export const levels: Level[] = [
     text: 'breaking news the stock market reached record highs today as investors responded positively to the federal reserve announcement',
     difficulty: 'hard',
     description: '新闻稿练习',
+    bpm: 175,
+    theme: '新闻演播室',
+    colors: ['#c31432', '#240b36'],
+    music: '紧张的新闻配乐',
   },
   
   // ==================== 专家难度 (25-30) ====================
@@ -188,6 +288,10 @@ export const levels: Level[] = [
     text: 'xyz abcdefghijklmnopqrstuvwxyz 0123456789 special characters like @#$%^&*() and punctuation marks too',
     difficulty: 'expert',
     description: '综合字符练习',
+    bpm: 180,
+    theme: '混沌空间',
+    colors: ['#833ab4', '#fd1d1d'],
+    music: '迷幻电子',
   },
   {
     id: 26,
@@ -195,6 +299,10 @@ export const levels: Level[] = [
     text: 'the patient presented with symptoms including persistent cough fever of thirty nine degrees celsius and difficulty breathing requiring immediate hospitalization',
     difficulty: 'expert',
     description: '医学术语练习',
+    bpm: 185,
+    theme: '手术室',
+    colors: ['#e0eafc', '#cfdef3'],
+    music: '紧张的氛围音',
   },
   {
     id: 27,
@@ -202,6 +310,10 @@ export const levels: Level[] = [
     text: 'the unexamined life is not worth living said socrates but what does it mean to examine ones life in the modern digital age',
     difficulty: 'expert',
     description: '哲学主题练习',
+    bpm: 190,
+    theme: '星空深处',
+    colors: ['#000428', '#004e92'],
+    music: '深邃的 ambient',
   },
   {
     id: 28,
@@ -209,6 +321,10 @@ export const levels: Level[] = [
     text: 'const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next)',
     difficulty: 'expert',
     description: '高级代码片段',
+    bpm: 195,
+    theme: '黑客帝国',
+    colors: ['#000000', '#003300'],
+    music: '黑暗电子',
   },
   {
     id: 29,
@@ -216,6 +332,10 @@ export const levels: Level[] = [
     text: 'hello 你好 こんにちは 안녕 Bonjour Hola Ciao Guten Tag Namaste 世界',
     difficulty: 'expert',
     description: '多语言混合练习',
+    bpm: 200,
+    theme: '世界地球',
+    colors: ['#11998e', '#38ef7d'],
+    music: '世界音乐融合',
   },
   {
     id: 30,
@@ -223,6 +343,10 @@ export const levels: Level[] = [
     text: 'the quick brown fox jumps over the lazy dog while sphinx of black quartz judges my vow and packs five dozen liquor jugs into my box',
     difficulty: 'expert',
     description: '经典句子大集合',
+    bpm: 210,
+    theme: '神之领域',
+    colors: ['#f12711', '#f5af19', '#667eea', '#764ba2'],
+    music: '史诗级交响电子',
   },
 ]
 
