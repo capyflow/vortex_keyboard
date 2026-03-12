@@ -113,7 +113,9 @@
           <span class="link-icon">↗</span>
         </a>
         <span class="footer-divider">•</span>
-        <span class="footer-version">v1.2.0</span>
+        <span class="footer-version">v1.4.0</span>
+        <span class="footer-divider">•</span>
+        <span class="footer-updated">更新于：2026-03-13</span>
       </div>
     </div>
 
@@ -671,6 +673,11 @@ function getParticleStyle(_index: number) {
   background: rgba(255, 255, 255, 0.1);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
+}
+
+.footer-updated {
+  font-size: 0.75rem;
+  opacity: 0.7;
 }
 
 /* 滚动提示 */
