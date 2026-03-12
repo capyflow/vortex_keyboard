@@ -13,7 +13,15 @@ export interface GameState {
   elapsedTime: number
   correctChars: number
   totalChars: number
+  wrongChars: number
   currentLevel: number
+}
+
+export interface KeyRecord {
+  key: string
+  isCorrect: boolean
+  timestamp: number
+  expected?: string
 }
 
 const BASE_SPEED = 1 // 基础速度
@@ -31,8 +39,12 @@ export const useGameStore = defineStore('game', () => {
     elapsedTime: 0,
     correctChars: 0,
     totalChars: 0,
+    wrongChars: 0,
     currentLevel: 1,
   })
+
+  // 按键记录
+  const keyRecords = ref<KeyRecord[]>([])
 
   const multiplier = computed(() => state.value.speed / BASE_SPEED)
   const accuracy = computed(() => {
@@ -80,26 +92,48 @@ export const useGameStore = defineStore('game', () => {
       elapsedTime: 0,
       correctChars: 0,
       totalChars: 0,
+      wrongChars: 0,
       currentLevel: state.value.currentLevel,
     }
+    keyRecords.value = []
   }
 
-  function handleCorrectInput(charCount: number = 1) {
+  function handleCorrectInput(charCount: number = 1, key?: string) {
     state.value.combo++
     state.value.maxCombo = Math.max(state.value.maxCombo, state.value.combo)
     state.value.correctChars += charCount
     state.value.totalChars += charCount
+
+    // 记录按键
+    if (key) {
+      keyRecords.value.push({
+        key,
+        isCorrect: true,
+        timestamp: Date.now(),
+      })
+    }
 
     // 计算速度加成：连击越高速度越快，最高 +50%
     const bonus = Math.min(state.value.combo * 0.05, 0.5)
     state.value.speed = BASE_SPEED * (1 + bonus)
   }
 
-  function handleWrongInput() {
+  function handleWrongInput(expected: string, actual: string) {
     // 错误惩罚：连击越高惩罚越重
     const penalty = state.value.combo > 5 ? 0.4 : 0.2
     state.value.speed = Math.max(BASE_SPEED * (1 - penalty), BASE_SPEED * 0.5)
     state.value.combo = 0
+    
+    // 记录错误
+    state.value.wrongChars++
+    state.value.totalChars++
+    
+    keyRecords.value.push({
+      key: actual,
+      isCorrect: false,
+      timestamp: Date.now(),
+      expected,
+    })
   }
 
   function updateProgress(current: number, total: number) {
@@ -119,6 +153,7 @@ export const useGameStore = defineStore('game', () => {
 
   return {
     state,
+    keyRecords,
     multiplier,
     accuracy,
     wpm,

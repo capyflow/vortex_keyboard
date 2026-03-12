@@ -92,7 +92,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  complete: [stats: { time: number; accuracy: number; combo: number; chars: number }]
+  complete: [stats: { time: number; accuracy: number; combo: number; chars: number; wrongChars: number }]
   error: []
 }>()
 
@@ -161,7 +161,7 @@ function handleKeydown(event: KeyboardEvent) {
     // 正确输入
     userInput.value += inputChar
     currentCharIndex.value++
-    gameStore.handleCorrectInput()
+    gameStore.handleCorrectInput(1, inputChar)
     gameStore.updateProgress(currentCharIndex.value, targetText.value.length)
     mascotMood.value = gameStore.state.combo > 5 ? 'happy' : 'focused'
 
@@ -179,7 +179,7 @@ function handleKeydown(event: KeyboardEvent) {
     }
   } else {
     // 错误输入
-    gameStore.handleWrongInput()
+    gameStore.handleWrongInput(targetChar || '', inputChar)
     mascotMood.value = 'frustrated'
     sound.playError()
     emit('error')
@@ -201,9 +201,10 @@ function completeLevel() {
     accuracy: gameStore.accuracy,
     combo: gameStore.state.maxCombo,
     chars: targetText.value.length,
+    wrongChars: gameStore.state.wrongChars,
   }
 
-  userStore.updateLevelStats(props.levelId, stats.time, stats.accuracy, stats.combo, stats.chars)
+  userStore.updateLevelStats(props.levelId, stats.time, stats.accuracy, stats.combo, stats.chars, stats.wrongChars)
   
   // 检查成就解锁（在父组件中处理）
   // 成就检查会在 AchievementsPanel 中自动进行

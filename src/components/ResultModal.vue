@@ -33,6 +33,18 @@
           <div class="stat-label">WPM</div>
           <div class="stat-value">{{ wpm }}</div>
         </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">正确字符</div>
+          <div class="stat-value">{{ stats.chars }}</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">❌</div>
+          <div class="stat-label">错误字符</div>
+          <div class="stat-value">{{ stats.wrongChars }}</div>
+        </div>
       </div>
       
       <div class="comparison" v-if="previousBest">
@@ -84,6 +96,7 @@ interface Stats {
   accuracy: number
   combo: number
   chars: number
+  wrongChars: number
 }
 
 const props = defineProps<{

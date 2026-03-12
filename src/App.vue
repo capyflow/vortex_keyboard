@@ -138,7 +138,7 @@ const currentLevelId = ref(1)
 const isPlaying = ref(false)
 const showResult = ref(false)
 const showSettings = ref(false)
-const lastStats = ref<{ time: number; accuracy: number; combo: number; chars: number } | null>(null)
+const lastStats = ref<{ time: number; accuracy: number; combo: number; chars: number; wrongChars: number } | null>(null)
 
 function handleStartGame() {
   showLanding.value = false
@@ -158,7 +158,7 @@ function startGame(levelId: number) {
   }
 }
 
-function handleComplete(stats: { time: number; accuracy: number; combo: number; chars: number }) {
+function handleComplete(stats: { time: number; accuracy: number; combo: number; chars: number; wrongChars: number }) {
   lastStats.value = stats
   showResult.value = true
 }

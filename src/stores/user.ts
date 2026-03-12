@@ -56,7 +56,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  function updateLevelStats(level: number, time: number, accuracy: number, combo: number, chars: number) {
+  function updateLevelStats(level: number, time: number, accuracy: number, combo: number, chars: number, _wrongChars: number = 0) {
     const existing = stats.value.levels[level] || {
       level,
       bestTime: null,
