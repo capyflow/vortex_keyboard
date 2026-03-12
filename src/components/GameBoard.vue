@@ -1,7 +1,14 @@
 <template>
-  <div class="game-container">
-    <!-- 顶部信息栏 -->
-    <div class="top-bar">
+  <ScreenShake ref="screenShakeRef">
+    <div class="game-container">
+      <!-- 连击火焰 -->
+      <ComboFire :combo="gameStore.state.combo" />
+      
+      <!-- 按键粒子 -->
+      <KeyParticles ref="keyParticlesRef" />
+      
+      <!-- 顶部信息栏 -->
+      <div class="top-bar">
       <div class="stat-item">
         <span class="stat-icon">🔥</span>
         <span class="stat-value combo-text" :class="{ 'combo-animate': comboAnimating }">
@@ -79,7 +86,8 @@
         重新开始
       </button>
     </div>
-  </div>
+    </div>
+  </ScreenShake>
 </template>
 
 <script setup lang="ts">
@@ -89,6 +97,9 @@ import { useUserStore } from '@/stores/user'
 import { useSound } from '@/composables/useSound'
 import { formatCombo } from '@/utils/combo'
 import { getLevel } from '@/data/levels'
+import ComboFire from '@/components/ComboFire.vue'
+import KeyParticles from '@/components/KeyParticles.vue'
+import ScreenShake from '@/components/ScreenShake.vue'
 
 const props = defineProps<{
   levelId: number
@@ -111,6 +122,8 @@ const currentCharIndex = ref(0)
 const mascotMood = ref<'happy' | 'focused' | 'frustrated' | 'celebrating'>('focused')
 const comboAnimating = ref(false)
 const lastCombo = ref(0)
+const keyParticlesRef = ref<InstanceType<typeof KeyParticles>>()
+const screenShakeRef = ref<InstanceType<typeof ScreenShake>>()
 
 const level = computed(() => getLevel(props.levelId))
 
@@ -187,6 +200,20 @@ function handleKeydown(event: KeyboardEvent) {
     // 播放音效
     sound.playKey()
     
+    // 生成粒子效果
+    if (keyParticlesRef.value) {
+      const inputElement = document.querySelector('.input-hint')
+      if (inputElement) {
+        const rect = inputElement.getBoundingClientRect()
+        keyParticlesRef.value.spawnParticles(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+          8,
+          true
+        )
+      }
+    }
+    
     // 每 5 个连击播放特殊音效
     if (gameStore.state.combo % 5 === 0 && gameStore.state.combo > 0) {
       sound.playCombo(gameStore.state.combo)
@@ -202,6 +229,25 @@ function handleKeydown(event: KeyboardEvent) {
     mascotMood.value = 'frustrated'
     sound.playError()
     emit('error')
+
+    // 屏幕震动
+    if (screenShakeRef.value) {
+      screenShakeRef.value.shake('medium', 300)
+    }
+    
+    // 生成错误粒子
+    if (keyParticlesRef.value) {
+      const inputElement = document.querySelector('.input-hint')
+      if (inputElement) {
+        const rect = inputElement.getBoundingClientRect()
+        keyParticlesRef.value.spawnParticles(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+          15,
+          false
+        )
+      }
+    }
 
     // 震动反馈
     if (navigator.vibrate) {
