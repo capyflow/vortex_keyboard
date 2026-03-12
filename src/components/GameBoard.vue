@@ -201,24 +201,36 @@ function handleInput(event: Event) {
     return
   }
   
-  // 处理移动端输入 - 逐个字符处理
-  if (newValue.length > userInput.value.length) {
-    // 有新增字符 - 获取实际新增的字符
-    const addedChar = newValue[userInput.value.length]
-    if (addedChar) {
+  // 移动端：只处理新增字符（从 currentCharIndex 位置开始）
+  if (newValue.length > currentCharIndex.value) {
+    // 获取从当前位置开始的所有新字符
+    const newChars = newValue.slice(currentCharIndex.value)
+    
+    // 逐个处理新字符
+    for (let i = 0; i < newChars.length; i++) {
+      const char = newChars[i]
+      if (!char) continue
+      
       isProcessingInput.value = true
-      processInputChar(addedChar)
+      processInputChar(char)
       isProcessingInput.value = false
+      
+      // 如果是错误输入，停止处理后续字符
+      if (currentCharIndex.value < newValue.length - newChars.length + i + 1) {
+        break
+      }
     }
-  } else if (newValue.length < userInput.value.length) {
+  } else if (newValue.length < currentCharIndex.value) {
     // 有删除字符
-    if (currentCharIndex.value > 0) {
-      currentCharIndex.value--
-      gameStore.updateProgress(currentCharIndex.value, targetText.value.length)
-    }
+    currentCharIndex.value = Math.min(newValue.length, currentCharIndex.value)
+    gameStore.updateProgress(currentCharIndex.value, targetText.value.length)
   }
   
-  userInput.value = newValue
+  // 同步 userInput 到当前正确输入的内容
+  userInput.value = targetText.value.substring(0, currentCharIndex.value)
+  if (hiddenInputRef.value) {
+    hiddenInputRef.value.value = userInput.value
+  }
 }
 
 // 处理单个字符输入
@@ -261,12 +273,10 @@ function processInputChar(char: string) {
       completeLevel()
     }
   } else {
-    // 错误输入 - 不前进 currentCharIndex，只记录错误
+    // 错误输入：记录错误，但不前进
     gameStore.handleWrongInput(targetChar || '', char)
     mascotMood.value = 'frustrated'
-    sound.playError()
-    emit('error')
-
+    
     // 屏幕震动
     if (screenShakeRef.value) {
       screenShakeRef.value.shake('medium', 300)
@@ -289,12 +299,6 @@ function processInputChar(char: string) {
     // 震动反馈
     if (navigator.vibrate) {
       navigator.vibrate(100)
-    }
-    
-    // 重置输入框，只保留已正确输入的部分
-    userInput.value = targetText.value.substring(0, currentCharIndex.value)
-    if (hiddenInputRef.value) {
-      hiddenInputRef.value.value = userInput.value
     }
   }
 }
