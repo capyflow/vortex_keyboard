@@ -81,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { useSound } from '@/composables/useSound'
@@ -108,6 +108,19 @@ const currentCharIndex = ref(0)
 const mascotMood = ref<'happy' | 'focused' | 'frustrated' | 'celebrating'>('focused')
 
 const level = computed(() => getLevel(props.levelId))
+
+// 监听关卡变化，重置状态
+watch(() => props.levelId, () => {
+  resetGameState()
+}, { immediate: true })
+
+function resetGameState() {
+  userInput.value = ''
+  currentCharIndex.value = 0
+  mascotMood.value = 'focused'
+  gameStore.resetGame()
+  gameStore.startGame()
+}
 const targetText = computed(() => level.value?.text || '')
 
 const mascotClass = computed(() => ({
@@ -224,7 +237,7 @@ function formatTime(seconds: number): string {
 let timerInterval: number | null = null
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
-  gameStore.startGame()
+  // gameStore.startGame() 已在 watch 中调用
 
   timerInterval = window.setInterval(() => {
     gameStore.updateElapsedTime()
