@@ -10,9 +10,20 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* 默认主题（紫色梦境） */
+  --theme-primary: #667eea;
+  --theme-secondary: #764ba2;
+  --theme-accent: #f093fb;
+  --theme-background: #1a1a2e;
+  --theme-gradient-1: #667eea;
+  --theme-gradient-2: #764ba2;
+  --theme-gradient-3: #f093fb;
+}
+
 body {
   font-family: 'Nunito', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--theme-gradient-1), var(--theme-gradient-2), var(--theme-gradient-3));
   min-height: 100vh;
   overflow-x: hidden;
   /* 移动端优化 */
@@ -20,6 +31,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.5s ease;
 }
 
 /* 移动端安全区域 */

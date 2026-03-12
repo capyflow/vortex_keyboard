@@ -81,6 +81,11 @@
         </div>
       </div>
       
+      <!-- 主题选择 -->
+      <ThemeSelector
+        v-model="currentThemeId"
+      />
+      
       <div class="settings-section">
         <h3 class="section-title">🎨 显示设置</h3>
         
@@ -121,9 +126,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useSound } from '@/composables/useSound'
 import { useMusic } from '@/composables/useMusic'
+import { useTheme } from '@/composables/useTheme'
+import ThemeSelector from '@/components/ThemeSelector.vue'
 
 const emit = defineEmits<{
   close: []
@@ -131,10 +138,23 @@ const emit = defineEmits<{
 
 const sound = useSound()
 const music = useMusic()
+const theme = useTheme()
 const fontSize = ref('medium')
+const currentThemeId = ref(theme.theme.value.id)
 
-// 加载音乐设置
+// 加载设置
 music.loadSettings()
+theme.loadTheme()
+
+// 监听主题选择变化
+watch(currentThemeId, (newId) => {
+  theme.setTheme(newId)
+})
+
+// 监听主题变化
+watch(() => theme.theme.value.id, (newId) => {
+  currentThemeId.value = newId
+})
 
 function handleToggleSound() {
   sound.toggleSound()

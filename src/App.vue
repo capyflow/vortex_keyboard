@@ -108,10 +108,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { useMusic } from '@/composables/useMusic'
+import { useTheme } from '@/composables/useTheme'
 import LandingPage from '@/components/LandingPage.vue'
 import LevelSelect from '@/components/LevelSelect.vue'
 import GameBoard from '@/components/GameBoard.vue'
@@ -124,10 +125,14 @@ import { getLevel } from '@/data/levels'
 const gameStore = useGameStore()
 const userStore = useUserStore()
 const music = useMusic()
+const theme = useTheme()
 
-// 初始化加载用户数据
-userStore.loadStats()
-music.loadSettings()
+// 初始化加载
+onMounted(() => {
+  userStore.loadStats()
+  music.loadSettings()
+  theme.loadTheme()
+})
 
 // 当前关卡的背景和音乐
 const currentLevelData = computed(() => getLevel(currentLevelId.value))
