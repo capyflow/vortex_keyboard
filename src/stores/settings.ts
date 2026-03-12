@@ -90,6 +90,7 @@ export const useSettingsStore = defineStore('settings', () => {
     settings,
     loadSettings,
     saveSettings,
+    applySettings,
     setFontSize,
     setTheme,
     setSoundEnabled,
