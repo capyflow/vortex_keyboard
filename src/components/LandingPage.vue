@@ -3,6 +3,7 @@
     <!-- 动态背景 -->
     <div class="hero-background">
       <div class="gradient-layer"></div>
+      <div class="gradient-overlay"></div>
       <div class="particles-layer">
         <span v-for="i in 50" :key="i" class="particle" :style="getParticleStyle(i)"></span>
       </div>
@@ -165,16 +166,34 @@ function getParticleStyle(_index: number) {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-  animation: gradient-shift 15s ease infinite;
+  background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c, #667eea);
+  background-size: 400% 400%;
+  animation: gradient-flow 15s ease infinite;
+  opacity: 0.8;
 }
 
-@keyframes gradient-shift {
-  0%, 100% {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+.gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(-45deg, #4facfe, #00f2fe, #43e97b, #667eea, #4facfe);
+  background-size: 400% 400%;
+  animation: gradient-flow 20s ease infinite reverse;
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
   }
   50% {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #f5576c 100%);
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
@@ -184,18 +203,44 @@ function getParticleStyle(_index: number) {
   left: 0;
   right: 0;
   bottom: 0;
+  overflow: hidden;
 }
 
 .particle {
   position: absolute;
   width: var(--size);
   height: var(--size);
-  background: rgba(255, 255, 255, 0.3);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
   border-radius: 50%;
   left: var(--left);
   bottom: -10px;
-  animation: float-up var(--duration) linear infinite;
+  animation: float-up var(--duration) ease-in-out infinite;
   animation-delay: var(--delay);
+  filter: blur(1px);
+}
+
+/* 添加光晕效果 */
+.hero-background::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: glow-pulse 10s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0.8;
+  }
 }
 
 .grid-layer {
@@ -205,15 +250,22 @@ function getParticleStyle(_index: number) {
   right: 0;
   bottom: 0;
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 50px 50px;
-  animation: grid-move 20s linear infinite;
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100px 100px;
+  animation: grid-move 30s ease-in-out infinite;
+  opacity: 0.5;
 }
 
 @keyframes grid-move {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(50px); }
+  0%, 100% { 
+    transform: translateY(0) scale(1);
+    opacity: 0.5;
+  }
+  50% { 
+    transform: translateY(50px) scale(1.05);
+    opacity: 0.3;
+  }
 }
 
 /* 主内容区 */
