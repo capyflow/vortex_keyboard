@@ -53,7 +53,7 @@
     </div>
 
     <!-- 文字显示区域 -->
-    <div class="text-display">
+    <div class="text-display" @click="focusInput">
       <div class="target-text">
         <span
           v-for="(char, index) in targetText"
@@ -65,6 +65,19 @@
         <span v-if="userInput.length > 0" class="user-input">{{ userInput }}</span>
         <span v-else class="placeholder">在此输入上方文字...</span>
       </div>
+      <!-- 隐藏的输入框，用于移动端键盘 -->
+      <input
+        ref="hiddenInputRef"
+        v-model="userInput"
+        type="text"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        class="hidden-input"
+        @input="handleInput"
+        @keydown="handleKeydown"
+      />
     </div>
 
     <!-- 进度条 -->
@@ -124,6 +137,7 @@ const comboAnimating = ref(false)
 const lastCombo = ref(0)
 const keyParticlesRef = ref<InstanceType<typeof KeyParticles>>()
 const screenShakeRef = ref<InstanceType<typeof ScreenShake>>()
+const hiddenInputRef = ref<HTMLInputElement>()
 
 const level = computed(() => getLevel(props.levelId))
 
@@ -143,6 +157,19 @@ watch(() => gameStore.state.combo, (newCombo) => {
   }
   lastCombo.value = newCombo
 })
+
+// 聚焦隐藏输入框（移动端）
+function focusInput() {
+  if (hiddenInputRef.value) {
+    hiddenInputRef.value.focus()
+  }
+}
+
+// 处理输入变化
+function handleInput(event: Event) {
+  const target = event.target as HTMLInputElement
+  userInput.value = target.value
+}
 
 function resetGameState() {
   userInput.value = ''
@@ -187,11 +214,13 @@ function handleKeydown(event: KeyboardEvent) {
   // 忽略修饰键
   if (inputChar.length > 1) return
 
-  event.preventDefault()
+  // 阻止默认行为（除了移动端）
+  if (!isMobile()) {
+    event.preventDefault()
+  }
 
   if (inputChar === targetChar) {
     // 正确输入
-    userInput.value += inputChar
     currentCharIndex.value++
     gameStore.handleCorrectInput(1, inputChar)
     gameStore.updateProgress(currentCharIndex.value, targetText.value.length)
@@ -256,6 +285,11 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
+// 检测是否移动设备
+function isMobile() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+}
+
 function completeLevel() {
   gameStore.stopGame()
   mascotMood.value = 'celebrating'
@@ -304,6 +338,13 @@ let timerInterval: number | null = null
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
   // gameStore.startGame() 已在 watch 中调用
+  
+  // 移动端自动聚焦
+  if (isMobile()) {
+    setTimeout(() => {
+      focusInput()
+    }, 500)
+  }
 
   timerInterval = window.setInterval(() => {
     gameStore.updateElapsedTime()
@@ -593,6 +634,28 @@ onUnmounted(() => {
 .placeholder {
   color: #9CA3AF;
   font-style: italic;
+}
+
+/* 隐藏输入框 - 移动端使用 */
+.hidden-input {
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .text-display {
+    cursor: text;
+  }
+  
+  .input-hint {
+    min-height: 3rem;
+  }
 }
 
 /* 进度条 */

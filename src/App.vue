@@ -113,6 +113,7 @@ import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { useMusic } from '@/composables/useMusic'
 import { useTheme } from '@/composables/useTheme'
+import { useSound } from '@/composables/useSound'
 import LandingPage from '@/components/LandingPage.vue'
 import LevelSelect from '@/components/LevelSelect.vue'
 import GameBoard from '@/components/GameBoard.vue'
@@ -126,11 +127,13 @@ const gameStore = useGameStore()
 const userStore = useUserStore()
 const music = useMusic()
 const theme = useTheme()
+const sound = useSound()
 
 // 初始化加载
 onMounted(() => {
   userStore.loadStats()
   music.loadSettings()
+  sound.loadSettings()
   theme.loadTheme()
 })
 
