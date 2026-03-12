@@ -177,7 +177,7 @@ function handleSetVolume(event: Event) {
 }
 
 function handleToggleMusic() {
-  music.toggle()
+  music.setEnabled(!music.enabled.value)
   settingsStore.setMusicEnabled(music.enabled.value)
 }
 

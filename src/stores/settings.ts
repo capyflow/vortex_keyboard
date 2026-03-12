@@ -18,7 +18,7 @@ export const useSettingsStore = defineStore('settings', () => {
     theme: 'default',
     soundEnabled: true,
     soundVolume: 0.5,
-    musicEnabled: false,
+    musicEnabled: true,
     musicVolume: 0.3,
   })
 

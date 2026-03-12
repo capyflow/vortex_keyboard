@@ -1,23 +1,33 @@
-import { ref, readonly, onUnmounted } from 'vue'
+import { ref, readonly } from 'vue'
 import { musicManager } from '@/utils/music'
+import { useSettingsStore } from '@/stores/settings'
 
 const STORAGE_KEY = 'vortex_keyboard_music_settings'
 
-export function useMusic() {
-  const isPlaying = ref(false)
-  const volume = ref(0.3)
-  const currentBpm = ref(60)
-  const currentTheme = ref('')
-  const enabled = ref(true) // 默认开启音乐
+const isPlaying = ref(false)
+const volume = ref(0.3)
+const currentBpm = ref(60)
+const currentTheme = ref('')
+const enabled = ref(true)
 
+export function useMusic() {
+  const settingsStore = useSettingsStore()
   // 加载设置
   function loadSettings() {
     try {
+      settingsStore.loadSettings()
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
         const config = JSON.parse(saved)
         volume.value = config.volume || 0.3
         enabled.value = typeof config.enabled === 'boolean' ? config.enabled : true
+        musicManager.setVolume(volume.value)
+      }
+      if (typeof settingsStore.settings.musicEnabled === 'boolean') {
+        enabled.value = settingsStore.settings.musicEnabled
+      }
+      if (typeof settingsStore.settings.musicVolume === 'number') {
+        volume.value = settingsStore.settings.musicVolume
         musicManager.setVolume(volume.value)
       }
     } catch (e) {
@@ -32,6 +42,8 @@ export function useMusic() {
         volume: volume.value,
         enabled: enabled.value 
       }))
+      settingsStore.setMusicEnabled(enabled.value)
+      settingsStore.setMusicVolume(volume.value)
     } catch (e) {
       console.error('Failed to save music settings:', e)
     }
@@ -56,8 +68,6 @@ export function useMusic() {
   function stopLevel() {
     musicManager.stopMusic()
     isPlaying.value = false
-    currentBpm.value = 0
-    currentTheme.value = ''
   }
 
   // 设置音量
@@ -93,10 +103,11 @@ export function useMusic() {
     saveSettings()
   }
 
-  // 清理
-  onUnmounted(() => {
-    stopLevel()
-  })
+  // 更新关卡上下文（不强制播放）
+  function setLevelContext(bpm: number, theme: string) {
+    currentBpm.value = bpm
+    currentTheme.value = theme
+  }
 
   return {
     isPlaying: readonly(isPlaying),
@@ -107,6 +118,7 @@ export function useMusic() {
     loadSettings,
     playLevel,
     stopLevel,
+    setLevelContext,
     setVolume,
     toggle,
     setEnabled,

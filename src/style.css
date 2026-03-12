@@ -26,6 +26,8 @@ body {
   background: linear-gradient(135deg, var(--theme-gradient-1), var(--theme-gradient-2), var(--theme-gradient-3));
   min-height: 100vh;
   overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
   /* 移动端优化 */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -48,22 +50,8 @@ body {
   font-family: 'Fredoka One', cursive;
 }
 
-/* 自定义滚动条 */
+/* 隐藏滚动条但保留滚动 */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  width: 0;
+  height: 0;
 }
