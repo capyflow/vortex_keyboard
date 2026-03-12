@@ -10,6 +10,7 @@ export interface GameState {
   baseSpeed: number
   progress: number
   startTime: number | null
+  pauseTime: number | null  // 暂停时的时间点
   elapsedTime: number
   correctChars: number
   totalChars: number
@@ -36,6 +37,7 @@ export const useGameStore = defineStore('game', () => {
     baseSpeed: BASE_SPEED,
     progress: 0,
     startTime: null,
+    pauseTime: null,
     elapsedTime: 0,
     correctChars: 0,
     totalChars: 0,
@@ -67,9 +69,17 @@ export const useGameStore = defineStore('game', () => {
 
   function pauseGame() {
     state.value.isPaused = true
+    state.value.pauseTime = Date.now()  // 记录暂停时间
   }
 
   function resumeGame() {
+    if (state.value.pauseTime) {
+      // 计算暂停时长
+      const pauseDuration = Date.now() - state.value.pauseTime
+      // 调整开始时间，扣除暂停时长
+      state.value.startTime = state.value.startTime! + pauseDuration
+      state.value.pauseTime = null
+    }
     state.value.isPaused = false
   }
 
@@ -89,6 +99,7 @@ export const useGameStore = defineStore('game', () => {
       baseSpeed: BASE_SPEED,
       progress: 0,
       startTime: null,
+      pauseTime: null,
       elapsedTime: 0,
       correctChars: 0,
       totalChars: 0,
