@@ -113,9 +113,9 @@
           <span class="link-icon">↗</span>
         </a>
         <span class="footer-divider">•</span>
-        <span class="footer-version">v1.4.0</span>
+        <span class="footer-version">v1.5.0</span>
         <span class="footer-divider">•</span>
-        <span class="footer-updated">更新于：2026-03-13</span>
+        <span class="footer-updated">更新于：2026-03-13 00:16</span>
       </div>
     </div>
 
