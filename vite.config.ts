@@ -10,4 +10,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    host: '0.0.0.0',  // 允许局域网访问
+    port: 5173,
+    strictPort: false, // 端口被占用时自动寻找可用端口
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 4173,
+  },
 })
