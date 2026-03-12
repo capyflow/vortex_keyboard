@@ -117,9 +117,11 @@ class MusicManager {
     const chordDuration = (60 / bpm) * 4
 
     const scheduleChord = () => {
-      if (!this.isPlaying || !this.audioContext) return
+      if (!this.isPlaying || !this.audioContext || !progression) return
 
       const chord = progression[this.chordIndex % progression.length]
+      if (!chord) return
+      
       this.chordIndex += 1
       const now = this.audioContext.currentTime
 

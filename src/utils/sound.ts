@@ -161,7 +161,9 @@ class SoundManager {
       gain.gain.linearRampToValueAtTime(0.01, start + 2)
 
       osc.connect(gain)
-      gain.connect(this.bgmGain)
+      if (this.bgmGain) {
+        gain.connect(this.bgmGain)
+      }
 
       osc.start(start)
       osc.stop(start + 2)
