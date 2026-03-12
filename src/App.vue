@@ -111,6 +111,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
+import { useSettingsStore } from '@/stores/settings'
 import { useMusic } from '@/composables/useMusic'
 import { useTheme } from '@/composables/useTheme'
 import { useSound } from '@/composables/useSound'
@@ -125,12 +126,15 @@ import { getLevel } from '@/data/levels'
 
 const gameStore = useGameStore()
 const userStore = useUserStore()
+const settingsStore = useSettingsStore()
 const music = useMusic()
 const theme = useTheme()
 const sound = useSound()
 
 // 初始化加载
 onMounted(() => {
+  settingsStore.loadSettings()
+  settingsStore.applySettings()
   userStore.loadStats()
   music.loadSettings()
   sound.loadSettings()

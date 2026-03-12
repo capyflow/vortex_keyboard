@@ -74,9 +74,12 @@
         autocorrect="off"
         autocapitalize="off"
         spellcheck="false"
+        inputmode="text"
         class="hidden-input"
         @input="handleInput"
         @keydown="handleKeydown"
+        @focus="handleFocus"
+        @blur="handleBlur"
       />
     </div>
 
@@ -162,13 +165,118 @@ watch(() => gameStore.state.combo, (newCombo) => {
 function focusInput() {
   if (hiddenInputRef.value) {
     hiddenInputRef.value.focus()
+    // 防止页面滚动到顶部
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
   }
+}
+
+// 处理聚焦 - 防止页面滚动
+function handleFocus() {
+  // 保存当前滚动位置
+  const scrollY = window.scrollY
+  setTimeout(() => {
+    window.scrollTo(0, scrollY)
+  }, 50)
+}
+
+// 处理失焦
+function handleBlur() {
+  // 可以在这里处理失焦逻辑
 }
 
 // 处理输入变化
 function handleInput(event: Event) {
   const target = event.target as HTMLInputElement
-  userInput.value = target.value
+  const newValue = target.value
+  
+  // 处理移动端输入 - 逐个字符处理
+  if (newValue.length > userInput.value.length) {
+    // 有新增字符
+    const addedChar = newValue.slice(-1)
+    processInputChar(addedChar)
+  } else if (newValue.length < userInput.value.length) {
+    // 有删除字符
+    if (currentCharIndex.value > 0) {
+      currentCharIndex.value--
+      gameStore.updateProgress(currentCharIndex.value, targetText.value.length)
+    }
+  }
+  
+  userInput.value = newValue
+}
+
+// 处理单个字符输入
+function processInputChar(char: string) {
+  if (!gameStore.state.isPlaying || gameStore.state.isPaused) return
+  
+  const targetChar = targetText.value[currentCharIndex.value]
+  
+  if (char === targetChar) {
+    // 正确输入
+    currentCharIndex.value++
+    gameStore.handleCorrectInput(1, char)
+    gameStore.updateProgress(currentCharIndex.value, targetText.value.length)
+    mascotMood.value = gameStore.state.combo > 5 ? 'happy' : 'focused'
+
+    // 播放音效
+    sound.playKey()
+    
+    // 生成粒子效果
+    if (keyParticlesRef.value) {
+      const inputElement = document.querySelector('.input-hint')
+      if (inputElement) {
+        const rect = inputElement.getBoundingClientRect()
+        keyParticlesRef.value.spawnParticles(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+          8,
+          true
+        )
+      }
+    }
+    
+    // 每 5 个连击播放特殊音效
+    if (gameStore.state.combo % 5 === 0 && gameStore.state.combo > 0) {
+      sound.playCombo(gameStore.state.combo)
+    }
+
+    // 检查是否完成
+    if (currentCharIndex.value >= targetText.value.length) {
+      completeLevel()
+    }
+  } else {
+    // 错误输入
+    gameStore.handleWrongInput(targetChar || '', char)
+    mascotMood.value = 'frustrated'
+    sound.playError()
+    emit('error')
+
+    // 屏幕震动
+    if (screenShakeRef.value) {
+      screenShakeRef.value.shake('medium', 300)
+    }
+    
+    // 生成错误粒子
+    if (keyParticlesRef.value) {
+      const inputElement = document.querySelector('.input-hint')
+      if (inputElement) {
+        const rect = inputElement.getBoundingClientRect()
+        keyParticlesRef.value.spawnParticles(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+          15,
+          false
+        )
+      }
+    }
+
+    // 震动反馈
+    if (navigator.vibrate) {
+      navigator.vibrate(100)
+    }
+  }
 }
 
 function resetGameState() {
@@ -214,73 +322,74 @@ function handleKeydown(event: KeyboardEvent) {
   // 忽略修饰键
   if (inputChar.length > 1) return
 
-  // 阻止默认行为（除了移动端）
+  // 阻止默认行为
+  event.preventDefault()
+
+  // 桌面端直接处理，移动端由 handleInput 处理
   if (!isMobile()) {
-    event.preventDefault()
-  }
+    if (inputChar === targetChar) {
+      // 正确输入
+      currentCharIndex.value++
+      gameStore.handleCorrectInput(1, inputChar)
+      gameStore.updateProgress(currentCharIndex.value, targetText.value.length)
+      mascotMood.value = gameStore.state.combo > 5 ? 'happy' : 'focused'
 
-  if (inputChar === targetChar) {
-    // 正确输入
-    currentCharIndex.value++
-    gameStore.handleCorrectInput(1, inputChar)
-    gameStore.updateProgress(currentCharIndex.value, targetText.value.length)
-    mascotMood.value = gameStore.state.combo > 5 ? 'happy' : 'focused'
-
-    // 播放音效
-    sound.playKey()
-    
-    // 生成粒子效果
-    if (keyParticlesRef.value) {
-      const inputElement = document.querySelector('.input-hint')
-      if (inputElement) {
-        const rect = inputElement.getBoundingClientRect()
-        keyParticlesRef.value.spawnParticles(
-          rect.left + rect.width / 2,
-          rect.top + rect.height / 2,
-          8,
-          true
-        )
+      // 播放音效
+      sound.playKey()
+      
+      // 生成粒子效果
+      if (keyParticlesRef.value) {
+        const inputElement = document.querySelector('.input-hint')
+        if (inputElement) {
+          const rect = inputElement.getBoundingClientRect()
+          keyParticlesRef.value.spawnParticles(
+            rect.left + rect.width / 2,
+            rect.top + rect.height / 2,
+            8,
+            true
+          )
+        }
       }
-    }
-    
-    // 每 5 个连击播放特殊音效
-    if (gameStore.state.combo % 5 === 0 && gameStore.state.combo > 0) {
-      sound.playCombo(gameStore.state.combo)
-    }
-
-    // 检查是否完成
-    if (currentCharIndex.value >= targetText.value.length) {
-      completeLevel()
-    }
-  } else {
-    // 错误输入
-    gameStore.handleWrongInput(targetChar || '', inputChar)
-    mascotMood.value = 'frustrated'
-    sound.playError()
-    emit('error')
-
-    // 屏幕震动
-    if (screenShakeRef.value) {
-      screenShakeRef.value.shake('medium', 300)
-    }
-    
-    // 生成错误粒子
-    if (keyParticlesRef.value) {
-      const inputElement = document.querySelector('.input-hint')
-      if (inputElement) {
-        const rect = inputElement.getBoundingClientRect()
-        keyParticlesRef.value.spawnParticles(
-          rect.left + rect.width / 2,
-          rect.top + rect.height / 2,
-          15,
-          false
-        )
+      
+      // 每 5 个连击播放特殊音效
+      if (gameStore.state.combo % 5 === 0 && gameStore.state.combo > 0) {
+        sound.playCombo(gameStore.state.combo)
       }
-    }
 
-    // 震动反馈
-    if (navigator.vibrate) {
-      navigator.vibrate(100)
+      // 检查是否完成
+      if (currentCharIndex.value >= targetText.value.length) {
+        completeLevel()
+      }
+    } else {
+      // 错误输入
+      gameStore.handleWrongInput(targetChar || '', inputChar)
+      mascotMood.value = 'frustrated'
+      sound.playError()
+      emit('error')
+
+      // 屏幕震动
+      if (screenShakeRef.value) {
+        screenShakeRef.value.shake('medium', 300)
+      }
+      
+      // 生成错误粒子
+      if (keyParticlesRef.value) {
+        const inputElement = document.querySelector('.input-hint')
+        if (inputElement) {
+          const rect = inputElement.getBoundingClientRect()
+          keyParticlesRef.value.spawnParticles(
+            rect.left + rect.width / 2,
+            rect.top + rect.height / 2,
+            15,
+            false
+          )
+        }
+      }
+
+      // 震动反馈
+      if (navigator.vibrate) {
+        navigator.vibrate(100)
+      }
     }
   }
 }
@@ -638,10 +747,10 @@ onUnmounted(() => {
 
 /* 隐藏输入框 - 移动端使用 */
 .hidden-input {
-  position: absolute;
+  position: fixed;
   opacity: 0;
-  top: 0;
-  left: 0;
+  top: -1000px;
+  left: -1000px;
   width: 1px;
   height: 1px;
   pointer-events: none;
@@ -655,6 +764,16 @@ onUnmounted(() => {
   
   .input-hint {
     min-height: 3rem;
+  }
+  
+  /* 防止移动端输入时页面滚动 */
+  .game-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
   }
 }
 

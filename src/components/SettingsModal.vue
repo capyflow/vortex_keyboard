@@ -94,7 +94,7 @@
             <span class="setting-icon">📝</span>
             <span>字体大小</span>
           </div>
-          <select :value="fontSize" @change="handleSetFontSize" class="select">
+          <select :value="settingsStore.settings.fontSize" @change="handleSetFontSize" class="select">
             <option value="small">小</option>
             <option value="medium">中</option>
             <option value="large">大</option>
@@ -126,10 +126,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useSound } from '@/composables/useSound'
 import { useMusic } from '@/composables/useMusic'
 import { useTheme } from '@/composables/useTheme'
+import { useSettingsStore } from '@/stores/settings'
 import ThemeSelector from '@/components/ThemeSelector.vue'
 
 const emit = defineEmits<{
@@ -139,16 +140,21 @@ const emit = defineEmits<{
 const sound = useSound()
 const music = useMusic()
 const theme = useTheme()
-const fontSize = ref('medium')
+const settingsStore = useSettingsStore()
 const currentThemeId = ref(theme.theme.value.id)
 
 // 加载设置
-music.loadSettings()
-theme.loadTheme()
+onMounted(() => {
+  settingsStore.loadSettings()
+  music.loadSettings()
+  theme.loadTheme()
+  sound.loadSettings()
+})
 
 // 监听主题选择变化
 watch(currentThemeId, (newId) => {
   theme.setTheme(newId)
+  settingsStore.setTheme(newId)
 })
 
 // 监听主题变化
@@ -158,25 +164,29 @@ watch(() => theme.theme.value.id, (newId) => {
 
 function handleToggleSound() {
   sound.toggleSound()
+  settingsStore.setSoundEnabled(sound.config.value.enabled)
 }
 
 function handleSetVolume(event: Event) {
   const value = (event.target as HTMLInputElement).value
   sound.setVolume(Number(value) / 100)
+  settingsStore.setSoundVolume(Number(value) / 100)
 }
 
 function handleToggleMusic() {
   music.toggle()
+  settingsStore.setMusicEnabled(music.isPlaying.value)
 }
 
 function handleSetMusicVolume(event: Event) {
   const value = (event.target as HTMLInputElement).value
   music.setVolume(Number(value) / 100)
+  settingsStore.setMusicVolume(Number(value) / 100)
 }
 
 function handleSetFontSize(event: Event) {
-  fontSize.value = (event.target as HTMLSelectElement).value
-  // TODO: 应用字体大小
+  const value = (event.target as HTMLSelectElement).value as 'small' | 'medium' | 'large'
+  settingsStore.setFontSize(value)
 }
 
 function handleClearData() {
@@ -185,9 +195,6 @@ function handleClearData() {
     location.reload()
   }
 }
-
-// 加载设置
-sound.loadSettings()
 </script>
 
 <style scoped>
