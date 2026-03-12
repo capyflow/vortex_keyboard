@@ -164,7 +164,10 @@ watch(() => theme.theme.value.id, (newId) => {
 
 function handleToggleSound() {
   sound.toggleSound()
-  settingsStore.setSoundEnabled(sound.config.value.enabled)
+  // 重新加载设置确保同步
+  setTimeout(() => {
+    sound.loadSettings()
+  }, 100)
 }
 
 function handleSetVolume(event: Event) {

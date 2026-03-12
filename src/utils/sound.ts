@@ -225,7 +225,12 @@ class SoundManager {
 
   setEnabled(enabled: boolean) {
     this.config.value.enabled = enabled
-    Howler.mute(!enabled)
+    if (enabled) {
+      Howler.mute(false)
+      Howler.volume(this.config.value.volume)
+    } else {
+      Howler.mute(true)
+    }
   }
 
   setVolume(volume: number) {

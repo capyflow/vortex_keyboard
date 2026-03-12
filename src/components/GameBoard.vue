@@ -193,9 +193,11 @@ function handleInput(event: Event) {
   
   // 处理移动端输入 - 逐个字符处理
   if (newValue.length > userInput.value.length) {
-    // 有新增字符
-    const addedChar = newValue.slice(-1)
-    processInputChar(addedChar)
+    // 有新增字符 - 获取实际新增的字符（从 currentCharIndex 位置开始）
+    const addedChar = newValue[userInput.value.length]
+    if (addedChar) {
+      processInputChar(addedChar)
+    }
   } else if (newValue.length < userInput.value.length) {
     // 有删除字符
     if (currentCharIndex.value > 0) {
@@ -247,7 +249,7 @@ function processInputChar(char: string) {
       completeLevel()
     }
   } else {
-    // 错误输入
+    // 错误输入 - 不前进 currentCharIndex，只记录错误
     gameStore.handleWrongInput(targetChar || '', char)
     mascotMood.value = 'frustrated'
     sound.playError()
@@ -276,6 +278,12 @@ function processInputChar(char: string) {
     if (navigator.vibrate) {
       navigator.vibrate(100)
     }
+    
+    // 重置输入框，只保留已正确输入的部分
+    userInput.value = targetText.value.substring(0, currentCharIndex.value)
+    if (hiddenInputRef.value) {
+      hiddenInputRef.value.value = userInput.value
+    }
   }
 }
 
@@ -287,6 +295,11 @@ function resetGameState() {
   comboAnimating.value = false
   gameStore.resetGame()
   gameStore.startGame()
+  
+  // 重置隐藏输入框
+  if (hiddenInputRef.value) {
+    hiddenInputRef.value.value = ''
+  }
 }
 const targetText = computed(() => level.value?.text || '')
 
@@ -330,6 +343,7 @@ function handleKeydown(event: KeyboardEvent) {
     if (inputChar === targetChar) {
       // 正确输入
       currentCharIndex.value++
+      userInput.value = targetText.value.substring(0, currentCharIndex.value)
       gameStore.handleCorrectInput(1, inputChar)
       gameStore.updateProgress(currentCharIndex.value, targetText.value.length)
       mascotMood.value = gameStore.state.combo > 5 ? 'happy' : 'focused'
