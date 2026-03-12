@@ -7,6 +7,12 @@
         <span class="confetti">🎊</span>
       </div>
       
+      <!-- 互动语句 -->
+      <div class="interaction-message" v-if="interactionMessage">
+        <div class="message-emoji">{{ interactionMessage.emoji }}</div>
+        <div class="message-text">{{ interactionMessage.text }}</div>
+      </div>
+      
       <h2 class="title">{{ isNewRecord ? '🏆 新纪录!' : '✅ 完成!' }}</h2>
       
       <div class="stats-grid">
@@ -81,6 +87,7 @@
 import { computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useSound } from '@/composables/useSound'
+import { getInteractionMessage, type LevelStats } from '@/data/interactions'
 import { levels } from '@/data/levels'
 
 const sound = useSound()
@@ -89,6 +96,32 @@ const sound = useSound()
 onMounted(() => {
   sound.loadSettings()
   sound.playComplete()
+})
+
+// 计算互动语句
+const interactionStats = computed<LevelStats>(() => {
+  if (!props.stats) {
+    return {
+      accuracy: 0,
+      wpm: 0,
+      time: 0,
+      combo: 0,
+      chars: 0,
+      wrongChars: 0,
+    }
+  }
+  return {
+    accuracy: props.stats.accuracy,
+    wpm: wpm.value,
+    time: props.stats.time,
+    combo: props.stats.combo,
+    chars: props.stats.chars,
+    wrongChars: props.stats.wrongChars,
+  }
+})
+
+const interactionMessage = computed(() => {
+  return getInteractionMessage(interactionStats.value)
 })
 
 interface Stats {
@@ -197,6 +230,67 @@ function formatTime(seconds: number): string {
   font-family: 'Fredoka One', cursive;
   color: #292F36;
   margin-bottom: 2rem;
+}
+
+/* 互动语句样式 */
+.interaction-message {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: slideIn 0.5s ease;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.message-emoji {
+  font-size: 3rem;
+  flex-shrink: 0;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+.message-text {
+  flex: 1;
+  font-size: 1.125rem;
+  color: white;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (max-width: 768px) {
+  .interaction-message {
+    padding: 1rem;
+  }
+  
+  .message-emoji {
+    font-size: 2.5rem;
+  }
+  
+  .message-text {
+    font-size: 1rem;
+  }
 }
 
 .stats-grid {
