@@ -187,9 +187,14 @@ function handleBlur() {
 }
 
 // 处理输入变化（仅移动端）
+const isProcessingInput = ref(false)
+
 function handleInput(event: Event) {
   const target = event.target as HTMLInputElement
   const newValue = target.value
+  
+  // 防止重复处理
+  if (isProcessingInput.value) return
   
   // 桌面端由 handleKeydown 处理，这里只同步值
   if (!isMobile()) {
@@ -202,7 +207,9 @@ function handleInput(event: Event) {
     // 有新增字符 - 获取实际新增的字符
     const addedChar = newValue[userInput.value.length]
     if (addedChar) {
+      isProcessingInput.value = true
       processInputChar(addedChar)
+      isProcessingInput.value = false
     }
   } else if (newValue.length < userInput.value.length) {
     // 有删除字符

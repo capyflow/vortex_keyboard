@@ -111,8 +111,12 @@ class MusicManager {
     const progression = chordProgressions[theme] || chordProgressions['default']
     const chordDuration = (60 / bpm) * 4 // 每个和弦持续 4 拍
 
-    progression?.forEach((chord, index) => {
-      const chordTime = startTime + index * chordDuration
+    // 循环播放和弦进行
+    const scheduleChord = (time: number, chordIndex: number) => {
+      if (!this.isPlaying || !this.audioContext || !progression) return
+
+      const chord = progression[chordIndex % progression.length]
+      if (!chord) return
       
       chord.forEach((freq) => {
         if (!this.audioContext) return
@@ -123,16 +127,21 @@ class MusicManager {
         osc.type = 'sine'
         osc.frequency.value = freq
         
-        gain.gain.setValueAtTime(this.volume * 0.3, chordTime)
-        gain.gain.exponentialRampToValueAtTime(0.01, chordTime + chordDuration - 0.1)
+        gain.gain.setValueAtTime(this.volume * 0.3, time)
+        gain.gain.exponentialRampToValueAtTime(0.01, time + chordDuration - 0.1)
         
         osc.connect(gain)
         gain.connect(this.audioContext.destination)
         
-        osc.start(chordTime)
-        osc.stop(chordTime + chordDuration)
+        osc.start(time)
+        osc.stop(time + chordDuration)
       })
-    })
+
+      // 调度下一个和弦
+      scheduleChord(time + chordDuration, chordIndex + 1)
+    }
+
+    scheduleChord(startTime, 0)
   }
 
   stopMusic() {
