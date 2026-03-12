@@ -28,10 +28,10 @@
           <div class="stat-value">{{ stats.accuracy }}%</div>
         </div>
         
-        <div class="stat-card">
+        <div class="stat-card combo-card">
           <div class="stat-icon">🔥</div>
           <div class="stat-label">最高连击</div>
-          <div class="stat-value">{{ stats.combo }}</div>
+          <div class="stat-value combo-value">{{ formatCombo(stats.combo) }}</div>
         </div>
         
         <div class="stat-card">
@@ -88,6 +88,7 @@ import { computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useSound } from '@/composables/useSound'
 import { getInteractionMessage, type LevelStats } from '@/data/interactions'
+import { formatCombo } from '@/utils/combo'
 import { levels } from '@/data/levels'
 
 const sound = useSound()
@@ -313,9 +314,33 @@ function formatTime(seconds: number): string {
   padding: 1rem;
 }
 
+.stat-card.combo-card {
+  background: linear-gradient(135deg, #FFE66D 0%, #FF6B6B 100%);
+}
+
+.stat-card.combo-card .stat-icon,
+.stat-card.combo-card .stat-label,
+.stat-card.combo-card .stat-value {
+  color: white;
+}
+
+.stat-card.combo-card .combo-value {
+  font-size: 1.75rem;
+  animation: comboPulse 2s ease-in-out infinite;
+}
+
 @media (max-width: 480px) {
   .stat-card {
     padding: 0.75rem;
+  }
+}
+
+@keyframes comboPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
   }
 }
 

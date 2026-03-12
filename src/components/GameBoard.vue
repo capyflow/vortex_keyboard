@@ -4,7 +4,9 @@
     <div class="top-bar">
       <div class="stat-item">
         <span class="stat-icon">🔥</span>
-        <span class="stat-value">{{ gameStore.state.combo }}</span>
+        <span class="stat-value combo-text" :class="{ 'combo-animate': comboAnimating }">
+          {{ formatCombo(gameStore.state.combo) }}
+        </span>
         <span class="stat-label">连击</span>
       </div>
       <div class="stat-item">
@@ -85,6 +87,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { useSound } from '@/composables/useSound'
+import { formatCombo } from '@/utils/combo'
 import { getLevel } from '@/data/levels'
 
 const props = defineProps<{
@@ -106,6 +109,8 @@ sound.loadSettings()
 const userInput = ref('')
 const currentCharIndex = ref(0)
 const mascotMood = ref<'happy' | 'focused' | 'frustrated' | 'celebrating'>('focused')
+const comboAnimating = ref(false)
+const lastCombo = ref(0)
 
 const level = computed(() => getLevel(props.levelId))
 
@@ -114,10 +119,24 @@ watch(() => props.levelId, () => {
   resetGameState()
 }, { immediate: true })
 
+// 监听连击变化，触发动画
+watch(() => gameStore.state.combo, (newCombo) => {
+  if (newCombo > lastCombo.value && newCombo > 0) {
+    // 连击增加，触发动画
+    comboAnimating.value = true
+    setTimeout(() => {
+      comboAnimating.value = false
+    }, 300)
+  }
+  lastCombo.value = newCombo
+})
+
 function resetGameState() {
   userInput.value = ''
   currentCharIndex.value = 0
   mascotMood.value = 'focused'
+  lastCombo.value = 0
+  comboAnimating.value = false
   gameStore.resetGame()
   gameStore.startGame()
 }
@@ -305,11 +324,34 @@ onUnmounted(() => {
   font-size: 1.25rem;
   font-weight: 700;
   font-family: 'Fredoka One', cursive;
+  transition: transform 0.1s ease;
 }
 
 @media (max-width: 768px) {
   .stat-value {
     font-size: 1rem;
+  }
+}
+
+/* 连击动画 */
+.combo-text {
+  display: inline-block;
+}
+
+.combo-animate {
+  animation: comboJump 0.3s ease;
+}
+
+@keyframes comboJump {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+    color: #FFE66D;
+  }
+  100% {
+    transform: scale(1);
   }
 }
 

@@ -16,6 +16,7 @@ export interface GameState {
   totalChars: number
   wrongChars: number
   currentLevel: number
+  lastInputTime: number | null  // 最后输入时间
 }
 
 export interface KeyRecord {
@@ -43,6 +44,7 @@ export const useGameStore = defineStore('game', () => {
     totalChars: 0,
     wrongChars: 0,
     currentLevel: 1,
+    lastInputTime: null,
   })
 
   // 按键记录
@@ -105,11 +107,20 @@ export const useGameStore = defineStore('game', () => {
       totalChars: 0,
       wrongChars: 0,
       currentLevel: state.value.currentLevel,
+      lastInputTime: null,
     }
     keyRecords.value = []
   }
 
   function handleCorrectInput(charCount: number = 1, key?: string) {
+    const now = Date.now()
+    
+    // 检查是否超时（1.5 秒）
+    if (state.value.lastInputTime && (now - state.value.lastInputTime) > 1500) {
+      state.value.combo = 0  // 超时重置连击
+    }
+    
+    state.value.lastInputTime = now
     state.value.combo++
     state.value.maxCombo = Math.max(state.value.maxCombo, state.value.combo)
     state.value.correctChars += charCount
@@ -130,6 +141,15 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function handleWrongInput(expected: string, actual: string) {
+    const now = Date.now()
+    
+    // 检查是否超时（1.5 秒）
+    if (state.value.lastInputTime && (now - state.value.lastInputTime) > 1500) {
+      state.value.combo = 0  // 超时重置连击
+    }
+    
+    state.value.lastInputTime = now
+    
     // 错误惩罚：连击越高惩罚越重
     const penalty = state.value.combo > 5 ? 0.4 : 0.2
     state.value.speed = Math.max(BASE_SPEED * (1 - penalty), BASE_SPEED * 0.5)
