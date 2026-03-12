@@ -346,6 +346,7 @@ function handleKeydown(event: KeyboardEvent) {
 
   // 桌面端直接处理，移动端由 handleInput 处理
   if (!isMobile()) {
+    // 正确输入：字符匹配（包括空格）
     if (inputChar === targetChar) {
       // 正确输入
       currentCharIndex.value++
@@ -380,37 +381,9 @@ function handleKeydown(event: KeyboardEvent) {
       if (currentCharIndex.value >= targetText.value.length) {
         completeLevel()
       }
-    } else {
-      // 错误输入
-      gameStore.handleWrongInput(targetChar || '', inputChar)
-      mascotMood.value = 'frustrated'
-      sound.playError()
-      emit('error')
-
-      // 屏幕震动
-      if (screenShakeRef.value) {
-        screenShakeRef.value.shake('medium', 300)
-      }
-      
-      // 生成错误粒子
-      if (keyParticlesRef.value) {
-        const inputElement = document.querySelector('.input-hint')
-        if (inputElement) {
-          const rect = inputElement.getBoundingClientRect()
-          keyParticlesRef.value.spawnParticles(
-            rect.left + rect.width / 2,
-            rect.top + rect.height / 2,
-            15,
-            false
-          )
-        }
-      }
-
-      // 震动反馈
-      if (navigator.vibrate) {
-        navigator.vibrate(100)
-      }
     }
+    // 错误输入：不匹配时不处理，让用户自己修正
+    // 不触发震动，不播放错误音，只是不前进
   }
 }
 

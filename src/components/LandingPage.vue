@@ -106,7 +106,7 @@
           <span class="link-icon">↗</span>
         </a>
         <span class="footer-divider">•</span>
-        <span class="footer-version">v0.5.0</span>
+        <span class="footer-version">v0.6.0</span>
       </div>
     </div>
 
