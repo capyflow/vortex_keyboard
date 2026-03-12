@@ -234,7 +234,7 @@ function handleInput(event: Event) {
       isProcessingInput.value = false
       
       // 如果是错误输入，停止处理后续字符
-      if (currentCharIndex.value < newValue.length - newChars.length + i + 1) {
+      if (currentCharIndex.value < currentCharIndex.value + i + 1) {
         break
       }
     }
@@ -257,6 +257,7 @@ function processInputChar(char: string) {
   
   const targetChar = targetText.value[currentCharIndex.value]
   
+  // 正确输入：字符匹配（包括空格）
   if (char === targetChar) {
     // 正确输入
     currentCharIndex.value++
@@ -317,6 +318,12 @@ function processInputChar(char: string) {
     // 震动反馈
     if (navigator.vibrate) {
       navigator.vibrate(100)
+    }
+    
+    // 重置输入框，只保留已正确输入的部分
+    userInput.value = targetText.value.substring(0, currentCharIndex.value)
+    if (hiddenInputRef.value) {
+      hiddenInputRef.value.value = userInput.value
     }
   }
 }
