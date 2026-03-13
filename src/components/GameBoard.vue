@@ -499,20 +499,19 @@ function completeLevel() {
 
   // 如果检测到作弊，显示警告并退回关卡选择
   if (detectionResult.isCheating && detectionResult.riskScore >= 60) {
-    console.warn('⚠️ [AntiCheat] 检测到可疑行为:', detectionResult.reasons)
+    console.error('⚠️ [AntiCheat] 检测到可疑行为:', detectionResult.reasons)
+    console.error('[AntiCheat] 风险评分:', detectionResult.riskScore)
+    console.error('[AntiCheat] 统计:', antiCheatStats)
     
-    // 延迟一下，让用户看到完成画面
+    // 显示警告弹窗
+    showAntiCheatWarning.value = true
+    cheatDetectionResult.value = detectionResult
+    cheatInputStats.value = antiCheatStats
+    
+    // 不提交成绩，直接退回
     setTimeout(() => {
-      // 显示警告弹窗
-      showAntiCheatWarning.value = true
-      cheatDetectionResult.value = detectionResult
-      cheatInputStats.value = antiCheatStats
-      
-      // 不提交成绩，直接退回
-      setTimeout(() => {
-        exitToLevels()
-      }, 500)
-    }, 300)
+      exitToLevels()
+    }, 1000)
     
     return // 不调用 emit('complete')，不提交成绩
   }
