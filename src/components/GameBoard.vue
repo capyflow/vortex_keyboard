@@ -104,6 +104,15 @@
         退出关卡
       </button>
     </div>
+    
+    <!-- 反作弊警告弹窗 -->
+    <AntiCheatWarning
+      v-if="showAntiCheatWarning"
+      :detection-result="cheatDetectionResult"
+      :input-stats="cheatInputStats"
+      @continue="handleCheatContinue"
+      @retry="handleCheatRetry"
+    />
     </div>
   </ScreenShake>
 </template>
@@ -119,6 +128,7 @@ import { getLevel, levels } from '@/data/levels'
 import ComboFire from '@/components/ComboFire.vue'
 import KeyParticles from '@/components/KeyParticles.vue'
 import ScreenShake from '@/components/ScreenShake.vue'
+import AntiCheatWarning from '@/components/AntiCheatWarning.vue'
 
 const props = defineProps<{
   levelId: number
@@ -147,6 +157,11 @@ const lastCombo = ref(0)
 const keyParticlesRef = ref<InstanceType<typeof KeyParticles>>()
 const screenShakeRef = ref<InstanceType<typeof ScreenShake>>()
 const hiddenInputRef = ref<HTMLInputElement>()
+
+// 反作弊警告状态
+const showAntiCheatWarning = ref(false)
+const cheatDetectionResult = ref<any>(null)
+const cheatInputStats = ref<any>(null)
 
 const resolvedLevelId = computed(() => {
   const id = Number(props.levelId)
@@ -389,9 +404,6 @@ function handleKeydown(event: KeyboardEvent) {
   // 阻止默认行为
   event.preventDefault()
 
-  // 记录按键时间（反作弊）
-  const timestamp = Date.now()
-
   // 桌面端直接处理，移动端由 handleInput 处理
   if (!isMobile()) {
     // 正确输入：字符匹配（包括空格）
@@ -485,11 +497,24 @@ function completeLevel() {
     inputStats: antiCheatStats,
   }
 
-  // 如果检测到作弊，显示警告
-  if (detectionResult.isCheating) {
+  // 如果检测到作弊，显示警告并退回关卡选择
+  if (detectionResult.isCheating && detectionResult.riskScore >= 60) {
     console.warn('⚠️ [AntiCheat] 检测到可疑行为:', detectionResult.reasons)
-    // 可以在这里选择是否允许提交成绩
-    // 或者标记成绩为"待验证"
+    
+    // 延迟一下，让用户看到完成画面
+    setTimeout(() => {
+      // 显示警告弹窗
+      showAntiCheatWarning.value = true
+      cheatDetectionResult.value = detectionResult
+      cheatInputStats.value = antiCheatStats
+      
+      // 不提交成绩，直接退回
+      setTimeout(() => {
+        exitToLevels()
+      }, 500)
+    }, 300)
+    
+    return // 不调用 emit('complete')，不提交成绩
   }
 
   userStore.updateLevelStats(props.levelId, stats.time, stats.accuracy, stats.combo, stats.chars, stats.wrongChars)
@@ -520,6 +545,25 @@ function handleRestart() {
 function handleExit() {
   gameStore.stopGame()
   emit('exit')
+}
+
+function exitToLevels() {
+  gameStore.stopGame()
+  emit('exit')
+}
+
+// 反作弊警告处理
+function handleCheatContinue() {
+  // 用户选择继续提交（但成绩已标记为无效）
+  showAntiCheatWarning.value = false
+  exitToLevels()
+}
+
+function handleCheatRetry() {
+  // 用户选择重新挑战
+  showAntiCheatWarning.value = false
+  resetAntiCheat()
+  handleRestart()
 }
 
 function formatTime(seconds: number): string {
