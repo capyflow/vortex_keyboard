@@ -113,10 +113,19 @@
           <span class="link-icon">↗</span>
         </a>
         <span class="footer-divider">•</span>
-        <span class="footer-version">v1.6.0 - 反作弊系统</span>
+        <button @click="showChangelog = true" class="footer-version-btn">
+          <span class="footer-version">v1.6.0 - 反作弊系统</span>
+        </button>
         <span class="footer-divider">•</span>
-        <span class="footer-updated">更新于：2026-03-13 22:50</span>
+        <span class="footer-updated">更新于：2026-03-13 22:53</span>
       </div>
+
+      <!-- 更新日志弹窗 -->
+      <ChangelogModal
+        v-if="showChangelog"
+        :show="showChangelog"
+        @close="showChangelog = false"
+      />
     </div>
 
     <!-- 滚动提示 -->
@@ -128,8 +137,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useMusic } from '@/composables/useMusic'
+import ChangelogModal from '@/components/ChangelogModal.vue'
+
+const showChangelog = ref(false)
 
 const emit = defineEmits<{
   start: []
