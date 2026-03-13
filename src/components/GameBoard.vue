@@ -113,6 +113,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { useSound } from '@/composables/useSound'
+import { useAntiCheat } from '@/composables/useAntiCheat'
 import { formatCombo } from '@/utils/combo'
 import { getLevel, levels } from '@/data/levels'
 import ComboFire from '@/components/ComboFire.vue'
@@ -133,6 +134,7 @@ const emit = defineEmits<{
 const gameStore = useGameStore()
 const userStore = useUserStore()
 const sound = useSound()
+const { validateSubmission, getStats, reset: resetAntiCheat } = useAntiCheat()
 
 // 加载音效设置
 sound.loadSettings()
@@ -260,6 +262,13 @@ function processInputChar(char: string) {
   
   // 正确输入：字符匹配（包括空格）
   if (char === targetChar) {
+    // 记录按键（反作弊）
+    if (!isMobile()) {
+      // 桌面端由 keydown 事件记录
+    } else {
+      // 移动端在这里记录
+    }
+
     // 正确输入
     currentCharIndex.value++
     gameStore.handleCorrectInput(1, char)
@@ -380,6 +389,9 @@ function handleKeydown(event: KeyboardEvent) {
   // 阻止默认行为
   event.preventDefault()
 
+  // 记录按键时间（反作弊）
+  const timestamp = Date.now()
+
   // 桌面端直接处理，移动端由 handleInput 处理
   if (!isMobile()) {
     // 正确输入：字符匹配（包括空格）
@@ -459,12 +471,25 @@ function completeLevel() {
   mascotMood.value = 'celebrating'
   sound.playComplete()
 
+  // 反作弊检测
+  const detectionResult = validateSubmission(targetText.value)
+  const antiCheatStats = getStats()
+
   const stats = {
     time: gameStore.state.elapsedTime,
     accuracy: gameStore.accuracy,
     combo: gameStore.state.maxCombo,
     chars: targetText.value.length,
     wrongChars: gameStore.state.wrongChars,
+    antiCheat: detectionResult,
+    inputStats: antiCheatStats,
+  }
+
+  // 如果检测到作弊，显示警告
+  if (detectionResult.isCheating) {
+    console.warn('⚠️ [AntiCheat] 检测到可疑行为:', detectionResult.reasons)
+    // 可以在这里选择是否允许提交成绩
+    // 或者标记成绩为"待验证"
   }
 
   userStore.updateLevelStats(props.levelId, stats.time, stats.accuracy, stats.combo, stats.chars, stats.wrongChars)
@@ -485,6 +510,7 @@ function handlePause() {
 
 function handleRestart() {
   gameStore.resetGame()
+  resetAntiCheat()
   userInput.value = ''
   currentCharIndex.value = 0
   mascotMood.value = 'focused'
