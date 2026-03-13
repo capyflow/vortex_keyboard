@@ -144,10 +144,13 @@ const emit = defineEmits<{
 const gameStore = useGameStore()
 const userStore = useUserStore()
 const sound = useSound()
-const { validateSubmission, getStats, reset: resetAntiCheat } = useAntiCheat()
+const { validateSubmission, getStats, reset: resetAntiCheat, bindEvents } = useAntiCheat()
 
 // 加载音效设置
 sound.loadSettings()
+
+// 绑定反作弊事件监听器
+bindEvents()
 
 const userInput = ref('')
 const currentCharIndex = ref(0)
@@ -479,6 +482,8 @@ function isMobile() {
 }
 
 function completeLevel() {
+  console.log('[AntiCheat] completeLevel 被调用')
+  
   gameStore.stopGame()
   mascotMood.value = 'celebrating'
   sound.playComplete()
@@ -486,6 +491,10 @@ function completeLevel() {
   // 反作弊检测
   const detectionResult = validateSubmission(targetText.value)
   const antiCheatStats = getStats()
+  
+  console.log('[AntiCheat] 检测结果:', detectionResult)
+  console.log('[AntiCheat] isCheating:', detectionResult.isCheating)
+  console.log('[AntiCheat] riskScore:', detectionResult.riskScore)
 
   const stats = {
     time: gameStore.state.elapsedTime,

@@ -3,7 +3,7 @@
  * 集成到 Vue 组件中
  */
 
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { antiCheat, type CheatDetectionResult } from '../utils/antiCheat'
 
 export function useAntiCheat() {
@@ -77,18 +77,18 @@ export function useAntiCheat() {
     showWarning.value = false
   }
 
-  // 自动绑定事件
-  onMounted(() => {
+  // 手动绑定事件（在组件中调用）
+  const bindEvents = () => {
     document.addEventListener('keydown', handleKeydown)
     document.addEventListener('input', handleInput)
     document.addEventListener('paste', handlePaste, true)
-  })
+  }
 
-  onUnmounted(() => {
+  const unbindEvents = () => {
     document.removeEventListener('keydown', handleKeydown)
     document.removeEventListener('input', handleInput)
     document.removeEventListener('paste', handlePaste, true)
-  })
+  }
 
   return {
     isCheatingDetected,
@@ -96,6 +96,8 @@ export function useAntiCheat() {
     showWarning,
     validateSubmission,
     getStats,
-    reset
+    reset,
+    bindEvents,
+    unbindEvents
   }
 }
