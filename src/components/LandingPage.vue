@@ -113,11 +113,13 @@
           <span class="link-icon">↗</span>
         </a>
         <span class="footer-divider">•</span>
-        <button @click="showChangelog = true" class="footer-version-btn">
-          <span class="footer-version">v1.6.0 - 反作弊系统</span>
-        </button>
+        <span class="footer-version">v1.6.0</span>
         <span class="footer-divider">•</span>
         <span class="footer-updated">更新于：2026-03-13 22:53</span>
+        <span class="footer-divider">•</span>
+        <button @click="showChangelog = true" class="footer-changelog-btn">
+          <span>📋 更新日志</span>
+        </button>
       </div>
 
       <!-- 更新日志弹窗 -->
@@ -682,14 +684,33 @@ function getParticleStyle(_index: number) {
 
 .footer-version {
   font-family: monospace;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  font-size: 0.85rem;
+  opacity: 0.9;
 }
 
 .footer-updated {
   font-size: 0.75rem;
   opacity: 0.7;
+}
+
+.footer-changelog-btn {
+  background: rgba(78, 204, 163, 0.2);
+  border: 1px solid rgba(78, 204, 163, 0.3);
+  color: #4ecca3;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.footer-changelog-btn:hover {
+  background: rgba(78, 204, 163, 0.3);
+  border-color: rgba(78, 204, 163, 0.5);
+  transform: translateY(-1px);
 }
 
 /* 滚动提示 */

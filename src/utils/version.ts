@@ -5,7 +5,7 @@
 
 export const VERSION = {
   version: 'v1.6.0',
-  subtitle: '反作弊系统',
+  subtitle: '',
   buildDate: '2026-03-13 22:53',
   buildTime: 1710344000000, // Unix timestamp
 }
